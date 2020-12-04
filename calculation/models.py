@@ -15,7 +15,7 @@ class CalculationRulesManager(models.Manager):
 
 
 class CalculationRules(core_models.HistoryBusinessModel):
-    calculation_class_name = models.CharField(db_column='CalculationsClassName', max_length=255)
+    calculation_class_name = models.CharField(db_column='CalculationsClassName', blank=True, null=True, max_length=255)
     description = models.CharField(db_column='Description', blank=True, null=True, max_length=255)
     priority = models.IntegerField(db_column='Priority', blank=True, null=True)
     status = models.IntegerField(db_column='Status', blank=True, null=True)
@@ -49,9 +49,9 @@ class CalculationRulesDetailsManager(models.Manager):
 class CalculationRulesDetails(core_models.HistoryModel):
     calculation_rules = models.ForeignKey(CalculationRules, db_column='CalculationRulesUUID', on_delete=models.deletion.DO_NOTHING)
     status = models.IntegerField(db_column='Status', blank=True, null=True)
-    main = models.BooleanField(db_column='Main')
-    params = FallbackJSONField(db_column="Params")
-    class_params = FallbackJSONField(db_column="ClassParams")
+    main = models.BooleanField(db_column='Main', blank=True, null=True)
+    params = FallbackJSONField(db_column="Params", blank=True, null=True)
+    class_params = FallbackJSONField(db_column="ClassParams", blank=True, null=True)
 
     objects = CalculationRulesDetailsManager()
 
