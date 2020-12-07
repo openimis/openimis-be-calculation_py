@@ -28,7 +28,7 @@ class CalculationRules(core_models.HistoryBusinessModel):
         if isinstance(user, ResolveInfo):
             user = user.context.user
         if settings.ROW_SECURITY and user.is_anonymous:
-            return queryset.filter(id=-1)
+            return queryset.filter(id=None)
         if settings.ROW_SECURITY:
             pass
         return queryset
@@ -61,7 +61,7 @@ class CalculationRulesDetails(core_models.HistoryModel):
         if isinstance(user, ResolveInfo):
             user = user.context.user
         if settings.ROW_SECURITY and user.is_anonymous:
-            return queryset.filter(id=-1)
+            return queryset.filter(id=None)
         if settings.ROW_SECURITY:
             pass
         return queryset
