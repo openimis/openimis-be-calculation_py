@@ -1,1 +1,1 @@
-from .services import *
+default_app_config = 'calculation.apps.CalculationConfig'
