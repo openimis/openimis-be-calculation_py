@@ -17,14 +17,11 @@ class ContributionValuationRule(AbsCalculationRule):
     date_valid_to = None
     status = "active"
 
-    _get_rule_details_params = []
-    _get_param_signal_params = []
-    _get_linked_class_signal_params = []
-    _calculate_event_signal_params = []
-    signal_get_rule_details = Signal(providing_args=_get_rule_details_params)
-    signal_get_param = Signal(providing_args=_get_param_signal_params)
-    signal_get_linked_class = Signal(providing_args=_get_linked_class_signal_params)
-    signal_calculate_event = Signal(providing_args=_calculate_event_signal_params)
+    signal_get_rule_name = Signal(providing_args=[])
+    signal_get_rule_details = Signal(providing_args=[])
+    signal_get_param = Signal(providing_args=[])
+    signal_get_linked_class = Signal(providing_args=[])
+    signal_calculate_event = Signal(providing_args=[])
 
     @classmethod
     def ready(cls):
@@ -34,6 +31,7 @@ class ContributionValuationRule(AbsCalculationRule):
         if condition_is_valid:
             if cls.status == "active":
                 # register signals getParameter to getParameter signal and getLinkedClass ot getLinkedClass signal
+                cls.signal_get_rule_name.connect(cls.get_rule_name, dispatch_uid="on_get_rule_name_signal")
                 cls.signal_get_rule_details.connect(cls.get_rule_details, dispatch_uid="on_get_rule_details_signal")
                 cls.signal_get_param.connect(cls.get_parameters, dispatch_uid="on_get_param_signal")
                 cls.signal_get_linked_class.connect(cls.get_linked_class, dispatch_uid="on_get_linked_class_signal")
