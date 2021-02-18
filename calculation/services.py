@@ -1,55 +1,63 @@
-import xml.etree.ElementTree as ET
 from django.core.exceptions import PermissionDenied
-import core
-from django.db import connection, transaction
-
-from django.conf import settings
+from .apps import CALCULATION_RULES
+from .calculation_rule import ContributionValuationRule
 
 
-@core.comparable
-class CalculationRules(object):
-
-    def __init__(self, calculation_rules):
-        self.calculation_rules = calculation_rules
-        pass
-
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-    def create(self, calculation_rules):
-        pass
-
-    def update(self, calculation_rules):
-        pass
-
-    def delete(self, calculation_rules):
-        pass
-
-    def replace_calculation_rules(self, calculation_rules):
-        pass
-
-    def remove_calculation_rules(self, calculation_rules):
-        pass
+def get_rule_name(class_name):
+    list_rule_name = []
+    for calculation_rule in CALCULATION_RULES:
+        result_signal = calculation_rule.signal_get_rule_name.send(sender=class_name, class_name=class_name)
+        if result_signal:
+            list_rule_name.extend(result_signal)
+    return list_rule_name
 
 
-@core.comparable
-class CalculationRulesDetails(object):
+def get_rule_details(class_name):
+    list_rule_details = []
+    for calculation_rule in CALCULATION_RULES:
+        result_signal = calculation_rule.signal_get_rule_details.send(sender=class_name, class_name=class_name)
+        if result_signal:
+            list_rule_details.extend(result_signal)
+    return list_rule_details
 
-    def __init__(self, calculation_rules_details):
-        self.calculation_rules_details = calculation_rules_details
-        pass
 
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+def run_calculation_rules(instance, context, user):
+    list_results_calculation = []
+    for calculation_rule in CALCULATION_RULES:
+        result_signal = calculation_rule.signal_calculate_event.send(
+            sender=instance.__class__.__name__, instance=instance, user=user, context=context
+        )
+        if result_signal:
+            list_results_calculation.extend(result_signal)
+    return list_results_calculation
 
-    def create(self, calculation_rules_details):
-        pass
 
-    def update(self, calculation_rules_details):
-        pass
+def get_parameters(class_name, instance):
+    """ className is the class name of the object where the calculation param need to be added
+        instance is where the link with a calculation need to be found,
+         like the CPB in case of PH insuree or Contract Details
+    """
+    list_parameters = []
+    for calculation_rule in CALCULATION_RULES:
+        result_signal = calculation_rule.signal_get_param.send(
+            sender=instance, class_name=class_name, instance=instance
+        )
+        if result_signal:
+            list_parameters.extend(result_signal)
+    # return the ruleDetails that are valid to classname and related to instance
+    return list_parameters
 
-    def delete(self, calculation_rules_details):
-        pass
 
-    def remove_calculation_rules_details(self, calculation_rules_details):
-        pass
+def get_linked_class(class_name_list=None):
+    return_list_class = []
+    for calculation_rule in CALCULATION_RULES:
+        if class_name_list == None:
+            result_signal = calculation_rule.signal_get_linked_class.send(sender="None", class_name=None)
+            if result_signal:
+                return_list_class.extend(result_signal)
+        else:
+            for class_name in class_name_list:
+                result_signal = calculation_rule.signal_get_linked_class.send(sender=class_name, class_name=class_name)
+                if result_signal:
+                    return_list_class.extend(result_signal)
+    return return_list_class
