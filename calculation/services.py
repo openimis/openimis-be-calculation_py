@@ -3,6 +3,15 @@ from .apps import CALCULATION_RULES
 from .calculation_rule import ContributionValuationRule
 
 
+def get_rule_name(class_name):
+    list_rule_name = []
+    for calculation_rule in CALCULATION_RULES:
+        result_signal = calculation_rule.signal_get_rule_name.send(sender=class_name, class_name=class_name)
+        if result_signal:
+            list_rule_name.extend(result_signal)
+    return list_rule_name
+
+
 def get_rule_details(class_name):
     list_rule_details = []
     for calculation_rule in CALCULATION_RULES:
