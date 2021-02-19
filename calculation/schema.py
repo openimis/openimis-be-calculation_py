@@ -1,6 +1,7 @@
 import graphene
 from .apps import CALCULATION_RULES
-from .services import get_rule_name
+from .services import get_rule_name, get_parameters
+from django.contrib.contenttypes.models import ContentType
 
 
 class CalculationRulesGQLType(graphene.ObjectType):
@@ -17,6 +18,36 @@ class CalculationRulesListGQLType(graphene.ObjectType):
     calculation_rules = graphene.List(CalculationRulesGQLType)
 
 
+class LabelParamGQLType(graphene.ObjectType):
+    name_en = graphene.String()
+    name_fr = graphene.String()
+
+
+class RightParamGQLType(graphene.ObjectType):
+    read = graphene.String()
+    write = graphene.String()
+    update = graphene.String()
+    replace = graphene.String()
+
+
+class OptionParamGQLType(graphene.ObjectType):
+    value = graphene.String()
+    label = graphene.Field(LabelParamGQLType)
+
+
+class CalculationParamsGQLType(graphene.ObjectType):
+    type = graphene.String()
+    name = graphene.String()
+    label = graphene.Field(LabelParamGQLType)
+    rights = graphene.Field(RightParamGQLType)
+    option_set = graphene.List(OptionParamGQLType)
+    default_value = graphene.String()
+
+
+class CalculatiuonParamsListGQLType(graphene.ObjectType):
+    calculation_params = graphene.List(CalculationParamsGQLType)
+
+
 class Query(graphene.ObjectType):
 
     calculation_rules_by_class_name = graphene.Field(
@@ -26,6 +57,13 @@ class Query(graphene.ObjectType):
 
     calculation_rules = graphene.Field(
         CalculationRulesListGQLType,
+    )
+
+    calculation_params = graphene.Field(
+        CalculatiuonParamsListGQLType,
+        class_name=graphene.Argument(graphene.String, required=True),
+        instance_uuid=graphene.Argument(graphene.UUID, required=True),
+        instance_class_name=graphene.Argument(graphene.String, required=True),
     )
 
     def resolve_calculation_rules_by_class_name(parent, info, **kwargs):
@@ -67,3 +105,51 @@ class Query(graphene.ObjectType):
                 )
             )
         return CalculationRulesListGQLType(list_cr)
+
+    def resolve_calculation_params(parent, info, **kwargs):
+        # get the obligatory params from query
+        class_name = kwargs.get("class_name", None)
+        instance_uuid = kwargs.get("instance_uuid", None)
+        instance_class_name = kwargs.get("instance_class_name", None)
+
+        # get the instance class name to get instance object by uuid
+        instance_type = ContentType.objects.get(model=f'{instance_class_name}')
+        instance_class = instance_type.model_class()
+        instance = instance_class.objects.get(id=instance_uuid)
+
+        list_params = []
+        if class_name:
+            # use service to send signal to all class to obtain params related to the instance
+            list_signal_result = get_parameters(class_name=class_name, instance=instance)
+            if list_signal_result:
+                for sr in list_signal_result:
+                    # get the signal result - calculation param object
+                    #  related to the input class name and instance
+                    params = sr[1]
+                    if params:
+                       for param in params:
+                           rights = RightParamGQLType(
+                               read=param['rights']['read'] if 'read' in param['rights'] else None,
+                               write=param['rights']['write'] if 'write' in param['rights'] else None,
+                               update=param['rights']['update'] if 'update' in param['rights'] else None,
+                               replace=param['rights']['replace'] if 'replace' in param['rights'] else None,
+                           )
+                           label = LabelParamGQLType(
+                               name_en=param['label']['en'] if 'en' in param['label'] else None,
+                               name_fr=param['label']['fr'] if 'fr' in param['label'] else None,
+                           )
+                           option_set = [OptionParamGQLType(
+                               value=ov["value"],
+                               label=LabelParamGQLType(name_en=ov["label"]["en"], name_fr=ov["label"]["fr"])
+                           ) for ov in param["optionSet"]] if "optionSet" in param else []
+                           list_params.append(
+                                CalculationParamsGQLType(
+                                    type=param['type'],
+                                    name=param['name'],
+                                    label=label,
+                                    rights=rights,
+                                    option_set=option_set,
+                                    default_value=param['default'],
+                                )
+                           )
+        return CalculatiuonParamsListGQLType(list_params)
