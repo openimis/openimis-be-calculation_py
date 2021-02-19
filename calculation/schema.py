@@ -1,5 +1,5 @@
 import graphene
-from .apps import CALCULATION_RULES
+from .apps import CALCULATION_RULES, CalculationConfig
 from .services import get_rule_name, get_parameters
 from django.contrib.contenttypes.models import ContentType
 
@@ -67,6 +67,9 @@ class Query(graphene.ObjectType):
     )
 
     def resolve_calculation_rules_by_class_name(parent, info, **kwargs):
+        if not info.context.user.has_perms(CalculationConfig.gql_query_calculation_rule_perms):
+           raise PermissionError("Unauthorized")
+
         class_name = kwargs.get("class_name", None)
         list_cr = []
         if class_name:
@@ -91,6 +94,9 @@ class Query(graphene.ObjectType):
         return CalculationRulesListGQLType(list_cr)
 
     def resolve_calculation_rules(parent, info, **kwargs):
+        if not info.context.user.has_perms(CalculationConfig.gql_query_calculation_rule_perms):
+           raise PermissionError("Unauthorized")
+
         list_cr = []
         for cr in CALCULATION_RULES:
             list_cr.append(
@@ -107,6 +113,9 @@ class Query(graphene.ObjectType):
         return CalculationRulesListGQLType(list_cr)
 
     def resolve_calculation_params(parent, info, **kwargs):
+        if not info.context.user.has_perms(CalculationConfig.gql_query_calculation_rule_perms):
+           raise PermissionError("Unauthorized")
+
         # get the obligatory params from query
         class_name = kwargs.get("class_name", None)
         instance_uuid = kwargs.get("instance_uuid", None)
