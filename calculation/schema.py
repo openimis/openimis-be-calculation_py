@@ -19,8 +19,8 @@ class CalculationRulesListGQLType(graphene.ObjectType):
 
 class Query(graphene.ObjectType):
 
-    calculation_rule = graphene.Field(
-        CalculationRulesGQLType,
+    calculation_rules_by_class_name = graphene.Field(
+        CalculationRulesListGQLType,
         class_name=graphene.Argument(graphene.String, required=True),
     )
 
@@ -28,20 +28,27 @@ class Query(graphene.ObjectType):
         CalculationRulesListGQLType,
     )
 
-    def resolve_calculation_rule(parent, info, **kwargs):
+    def resolve_calculation_rules_by_class_name(parent, info, **kwargs):
         class_name = kwargs.get("class_name", None)
-        calculation_object = None
+        list_cr = []
         if class_name:
-            calculation_object = get_rule_name(class_name=class_name)[0][1]
-        return CalculationRulesGQLType(
-            calculation_class_name=calculation_object.calculation_rule_name,
-            status=calculation_object.status,
-            description=calculation_object.description,
-            uuid=calculation_object.uuid,
-            class_param=calculation_object.impacted_class_parameter,
-            date_valid_from=calculation_object.date_valid_from,
-            date_valid_to=calculation_object.date_valid_to,
-        )
+            list_signal_result = get_rule_name(class_name=class_name)
+            if list_signal_result:
+                for sr in list_signal_result:
+                    rule = sr[1]
+                    if rule:
+                        list_cr.append(
+                            CalculationRulesGQLType(
+                                calculation_class_name=rule.calculation_rule_name,
+                                status=rule.status,
+                                description=rule.description,
+                                uuid=rule.uuid,
+                                class_param=rule.impacted_class_parameter,
+                                date_valid_from=rule.date_valid_from,
+                                date_valid_to=rule.date_valid_to,
+                            )
+                        )
+        return CalculationRulesListGQLType(list_cr)
 
     def resolve_calculation_rules(parent, info, **kwargs):
         list_cr = []
