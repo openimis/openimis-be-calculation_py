@@ -35,6 +35,8 @@ class Query(graphene.ObjectType):
             list_signal_result = get_rule_name(class_name=class_name)
             if list_signal_result:
                 for sr in list_signal_result:
+                    # get the signal result - calculation rule object
+                    #  related to the input class name
                     rule = sr[1]
                     if rule:
                         list_cr.append(
