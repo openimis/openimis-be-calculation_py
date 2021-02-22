@@ -8,6 +8,7 @@ from core.signals import Signal
 from core import datetime
 from policyholder.models import PolicyHolderInsuree
 
+
 class ContributionValuationRule(AbsCalculationRule):
 
     version = 1
