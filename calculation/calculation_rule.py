@@ -1,9 +1,12 @@
+import json
+
 from .apps import AbsCalculationRule
 from .config import CLASS_RULE_PARAM_VALIDATION, \
     DESCRIPTION_CONTRIBUTION_VALUATION
 from contribution_plan.models import ContributionPlanBundleDetails
 from core.signals import Signal
 from core import datetime
+from policyholder.models import PolicyHolderInsuree
 
 
 class ContributionValuationRule(AbsCalculationRule):
@@ -68,11 +71,34 @@ class ContributionValuationRule(AbsCalculationRule):
     @classmethod
     def calculate(cls, instance, *args):
         if instance.__class__.__name__ == "ContractContributionPlanDetails":
-            if "rate" in instance.contribution_plan.json_ext and "income" in instance.contract_details.json_ext:
-                rate = instance.contribution_plan.json_ext["rate"]
-                income = instance.contract_details.json_ext["income"]
-                value = income * (rate/100)
+            # check type of json_ext - in case of string - json.loads
+            cp_params, cd_params = instance.contribution_plan.json_ext, instance.contract_details.json_ext
+            ph_insuree = PolicyHolderInsuree.objects.filter(
+                insuree=instance.contract_details.insuree).first()
+            phi_params = ph_insuree.json_ext
+            if isinstance(cp_params, str):
+                cp_params = json.loads(cp_params)
+            if isinstance(cd_params, str):
+                cd_params = json.loads(cd_params)
+            if isinstance(phi_params, str):
+                phi_params = json.loads(phi_params)
+            if "rate" in cp_params:
+                rate = int(cp_params["rate"])
+                if cd_params:
+                    if "income" in cd_params:
+                        income = float(cd_params["income"])
+                    elif "income" in phi_params:
+                        income = float(phi_params["income"])
+                    else:
+                        return False
+                elif "income" in phi_params:
+                    income = float(phi_params["income"])
+                else:
+                    return False
+                value = float(income) * (rate/100)
                 return value
+            else:
+                return False
         else:
             return False
 
