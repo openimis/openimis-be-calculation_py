@@ -22,14 +22,14 @@ def get_rule_details(class_name):
 
 
 def run_calculation_rules(instance, context, user):
-    list_results_calculation = []
     for calculation_rule in CALCULATION_RULES:
         result_signal = calculation_rule.signal_calculate_event.send(
             sender=instance.__class__.__name__, instance=instance, user=user, context=context
         )
         if result_signal:
-            list_results_calculation.extend(result_signal)
-    return list_results_calculation
+            return result_signal
+    # if no listened calculation rules - return None
+    return None
 
 
 def get_parameters(class_name, instance):
