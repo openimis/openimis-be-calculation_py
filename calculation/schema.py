@@ -1,6 +1,6 @@
 import graphene
 from .apps import CALCULATION_RULES, CalculationConfig
-from .services import get_rule_name, get_parameters
+from .services import get_rule_name, get_parameters, get_linked_class
 from django.contrib.contenttypes.models import ContentType
 
 
@@ -44,8 +44,12 @@ class CalculationParamsGQLType(graphene.ObjectType):
     default_value = graphene.String()
 
 
-class CalculatiuonParamsListGQLType(graphene.ObjectType):
+class CalculationParamsListGQLType(graphene.ObjectType):
     calculation_params = graphene.List(CalculationParamsGQLType)
+
+
+class LinkedClassListGQLType(graphene.ObjectType):
+    linked_classes = graphene.List(graphene.String)
 
 
 class Query(graphene.ObjectType):
@@ -60,10 +64,15 @@ class Query(graphene.ObjectType):
     )
 
     calculation_params = graphene.Field(
-        CalculatiuonParamsListGQLType,
+        CalculationParamsListGQLType,
         class_name=graphene.Argument(graphene.String, required=True),
         instance_uuid=graphene.Argument(graphene.UUID, required=True),
         instance_class_name=graphene.Argument(graphene.String, required=True),
+    )
+
+    linked_class = graphene.Field(
+        LinkedClassListGQLType,
+        class_name_list=graphene.Argument(graphene.List(graphene.String), required=False),
     )
 
     def resolve_calculation_rules_by_class_name(parent, info, **kwargs):
@@ -161,4 +170,15 @@ class Query(graphene.ObjectType):
                                     default_value=param['default'],
                                 )
                            )
-        return CalculatiuonParamsListGQLType(list_params)
+        return CalculationParamsListGQLType(list_params)
+
+    def resolve_linked_class(parent, info, **kwargs):
+        if not info.context.user.has_perms(CalculationConfig.gql_query_calculation_rule_perms):
+           raise PermissionError("Unauthorized")
+        result_linked_class = []
+        # get the params from query
+        class_name_list = kwargs.get("class_name_list", None)
+        list_signal_result = get_linked_class(class_name_list=class_name_list)
+        for sr in list_signal_result:
+            result_linked_class = result_linked_class + sr[1]
+        return LinkedClassListGQLType(list(set(result_linked_class)))
