@@ -6,11 +6,11 @@ from .config import CLASS_RULE_PARAM_VALIDATION, \
 from contribution_plan.models import ContributionPlanBundleDetails
 from core.signals import Signal
 from core import datetime
+from django.contrib.contenttypes.models import ContentType
 from policyholder.models import PolicyHolderInsuree
 
 
 class ContributionValuationRule(AbsCalculationRule):
-
     version = 1
     uuid = "0e1b6dd4-04a0-4ee6-ac47-2a99cfa5e9a8"
     calculation_rule_name = "CV: percent of income"
@@ -50,14 +50,13 @@ class ContributionValuationRule(AbsCalculationRule):
     def check_calculation(cls, instance):
         match = False
         class_name = instance.__class__.__name__
+        list_class_name = [
+            "PolicyHolder", "ContributionPlan",
+            "PolicyHolderInsuree", "ContractDetails",
+            "ContractContributionPlanDetails", "ContributionPlanBundle"
+        ]
         if class_name == "ContributionPlan":
             match = str(cls.uuid) == str(instance.calculation)
-        elif class_name == "PolicyHolderInsuree":
-            match = cls.check_calculation(instance.contribution_plan_bundle)
-        elif class_name == "ContractDetails":
-            match = cls.check_calculation(instance.contribution_plan_bundle)
-        elif class_name == "ContractContributionPlanDetails":
-            match = cls.check_calculation(instance.contribution_plan)
         elif class_name == "ContributionPlanBundle":
             list_cpbd = list(ContributionPlanBundleDetails.objects.filter(
                 contribution_plan_bundle=instance
@@ -65,7 +64,14 @@ class ContributionValuationRule(AbsCalculationRule):
             for cpbd in list_cpbd:
                 if match is False:
                     if cls.check_calculation(cpbd.contribution_plan):
-                       match = True
+                        match = True
+        else:
+            related_fields = [
+                f.name for f in instance.__class__._meta.fields
+                if f.get_internal_type() == 'ForeignKey' and f.remote_field.model.__name__ in list_class_name
+            ]
+            for rf in related_fields:
+                match = cls.check_calculation(getattr(instance, rf))
         return match
 
     @classmethod
@@ -95,7 +101,7 @@ class ContributionValuationRule(AbsCalculationRule):
                     income = float(phi_params["income"])
                 else:
                     return False
-                value = float(income) * (rate/100)
+                value = float(income) * (rate / 100)
                 return value
             else:
                 return False
@@ -105,14 +111,21 @@ class ContributionValuationRule(AbsCalculationRule):
     @classmethod
     def get_linked_class(cls, sender, class_name, **kwargs):
         list_class = []
-        if class_name == "ContributionPlan" or class_name is None:
+        if class_name != None:
+            model_class = ContentType.objects.filter(model=class_name).first()
+            if model_class:
+                model_class = model_class.model_class()
+                list_class = list_class + \
+                             [f.remote_field.model.__name__ for f in model_class._meta.fields
+                              if f.get_internal_type() == 'ForeignKey' and f.remote_field.model.__name__ != "User"]
+        else:
             list_class.append("Calculation")
-        elif class_name == "PolicyHolderInsuree" or class_name is None:
-            list_class.append("ContributionPlanBundle")
-        elif class_name == "ContractDetails" or class_name is None:
-            list_class.append("ContributionPlanBundle")
-        elif class_name == "ContractContributionPlanDetails" or class_name is None:
-            list_class.append("ContributionPlan")
-        elif class_name == "ContributionPlanBundle" or class_name is None:
+        # because we have calculation in ContributionPlan
+        #  as uuid - we have to consider this case
+        if class_name == "ContributionPlan":
+            list_class.append("Calculation")
+        # because we have no direct relation in ContributionPlanBundle
+        #  to ContributionPlan we have to consider this case
+        if class_name == "ContributionPlanBundle":
             list_class.append("ContributionPlan")
         return list_class
