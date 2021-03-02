@@ -39,7 +39,23 @@ CLASS_RULE_PARAM_VALIDATION = [
                     },
                 ],
                 "default": "5"
-            }
+            },
+            {
+                "type": "checkbox",
+                "name": "includeFamilly",
+                "label": {
+                    "en": "include family members",
+                    "fr": "Inclure les membres de la familles"
+                },
+                "rights": {
+                    "read": "151201",
+                    "write": "151202",
+                    "update": "151203",
+                    "replace": "151206",
+                },
+                "relevance": "True",
+                "default": "False"
+            },
         ],
     },
     {
