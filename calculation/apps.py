@@ -31,7 +31,7 @@ class CalculationConfig(AppConfig):
     gql_query_calculation_rule_perms = []
     gql_mutation_update_calculation_rule_perms = []
 
-    def _configure_permissions(selfself, cfg):
+    def _configure_permissions(self, cfg):
         CalculationConfig.gql_query_calculation_rule_perms = cfg[
             "gql_query_calculation_rule_perms"]
         CalculationConfig.gql_mutation_update_calculation_rule_perms = cfg[
