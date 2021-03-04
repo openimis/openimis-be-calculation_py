@@ -66,7 +66,7 @@ class Query(graphene.ObjectType):
     calculation_params = graphene.Field(
         CalculationParamsListGQLType,
         class_name=graphene.Argument(graphene.String, required=True),
-        instance_uuid=graphene.Argument(graphene.UUID, required=True),
+        instance_id=graphene.Argument(graphene.String, required=True),
         instance_class_name=graphene.Argument(graphene.String, required=True),
     )
 
@@ -127,13 +127,13 @@ class Query(graphene.ObjectType):
 
         # get the obligatory params from query
         class_name = kwargs.get("class_name", None)
-        instance_uuid = kwargs.get("instance_uuid", None)
+        instance_id = kwargs.get("instance_id", None)
         instance_class_name = kwargs.get("instance_class_name", None)
 
         # get the instance class name to get instance object by uuid
         instance_type = ContentType.objects.get(model=f'{instance_class_name}')
         instance_class = instance_type.model_class()
-        instance = instance_class.objects.get(id=instance_uuid)
+        instance = instance_class.objects.get(id=instance_id)
 
         list_params = []
         if class_name:
