@@ -19,8 +19,8 @@ class CalculationRulesListGQLType(graphene.ObjectType):
 
 
 class LabelParamGQLType(graphene.ObjectType):
-    name_en = graphene.String()
-    name_fr = graphene.String()
+    en = graphene.String()
+    fr = graphene.String()
 
 
 class RightParamGQLType(graphene.ObjectType):
@@ -153,12 +153,12 @@ class Query(graphene.ObjectType):
                                replace=param['rights']['replace'] if 'replace' in param['rights'] else None,
                            )
                            label = LabelParamGQLType(
-                               name_en=param['label']['en'] if 'en' in param['label'] else None,
-                               name_fr=param['label']['fr'] if 'fr' in param['label'] else None,
+                               en=param['label']['en'] if 'en' in param['label'] else None,
+                               fr=param['label']['fr'] if 'fr' in param['label'] else None,
                            )
                            option_set = [OptionParamGQLType(
                                value=ov["value"],
-                               label=LabelParamGQLType(name_en=ov["label"]["en"], name_fr=ov["label"]["fr"])
+                               label=LabelParamGQLType(en=ov["label"]["en"], fr=ov["label"]["fr"])
                            ) for ov in param["optionSet"]] if "optionSet" in param else []
                            list_params.append(
                                 CalculationParamsGQLType(
