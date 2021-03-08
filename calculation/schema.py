@@ -130,13 +130,20 @@ class Query(graphene.ObjectType):
         instance_id = kwargs.get("instance_id", None)
         instance_class_name = kwargs.get("instance_class_name", None)
 
-        # get the instance class name to get instance object by uuid
-        instance_type = ContentType.objects.get(model=f'{instance_class_name}')
-        instance_class = instance_type.model_class()
-        instance = instance_class.objects.get(id=instance_id)
+        instance = None
+        # if calculation class - it is not a model
+        if instance_class_name == "Calculation":
+            for calculation_rule in CALCULATION_RULES:
+                if calculation_rule.uuid == instance_id:
+                    instance = calculation_rule
+        else:
+            # get the instance class name to get instance object by uuid
+            instance_type = ContentType.objects.get(model=f'{instance_class_name}')
+            instance_class = instance_type.model_class()
+            instance = instance_class.objects.get(id=instance_id)
 
         list_params = []
-        if class_name:
+        if class_name and instance:
             # use service to send signal to all class to obtain params related to the instance
             list_signal_result = get_parameters(class_name=class_name, instance=instance)
             if list_signal_result:
