@@ -55,7 +55,9 @@ class ContributionValuationRule(AbsCalculationRule):
             "PolicyHolderInsuree", "ContractDetails",
             "ContractContributionPlanDetails", "ContributionPlanBundle"
         ]
-        if class_name == "ContributionPlan":
+        if class_name == "ABCMeta":
+            match = str(cls.uuid) == str(instance.uuid)
+        elif class_name == "ContributionPlan":
             match = str(cls.uuid) == str(instance.calculation)
         elif class_name == "ContributionPlanBundle":
             list_cpbd = list(ContributionPlanBundleDetails.objects.filter(
