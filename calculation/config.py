@@ -62,7 +62,7 @@ CLASS_RULE_PARAM_VALIDATION = [
         "class": "ContractDetails",
         "parameters": [
             {
-                "type": "float",
+                "type": "number",
                 "name": "income",
                 "label": {
                     "en": "Income",
@@ -82,7 +82,7 @@ CLASS_RULE_PARAM_VALIDATION = [
         "class": "PolicyHolderInsuree",
         "parameters": [
             {
-                "type": "float",
+                "type": "number",
                 "name": "income",
                 "label": {
                     "en": "Income",
