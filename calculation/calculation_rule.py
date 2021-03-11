@@ -90,6 +90,13 @@ class ContributionValuationRule(AbsCalculationRule):
                 cd_params = json.loads(cd_params)
             if isinstance(phi_params, str):
                 phi_params = json.loads(phi_params)
+            # check if json external calculation rule in instance exists
+            if cp_params:
+                cp_params = cp_params["calculation_rule"] if "calculation_rule" in cp_params else None
+            if cd_params:
+                cd_params = cd_params["calculation_rule"] if "calculation_rule" in cd_params else None
+            if phi_params:
+                phi_params = phi_params["calculation_rule"] if "calculation_rule" in phi_params else None
             if "rate" in cp_params:
                 rate = int(cp_params["rate"])
                 if cd_params:
