@@ -146,37 +146,41 @@ class Query(graphene.ObjectType):
         if class_name and instance:
             # use service to send signal to all class to obtain params related to the instance
             list_signal_result = get_parameters(class_name=class_name, instance=instance)
+            tranformed_signal_results = []
             if list_signal_result:
                 for sr in list_signal_result:
                     # get the signal result - calculation param object
                     #  related to the input class name and instance
-                    params = sr[1]
-                    if params:
-                       for param in params:
-                           rights = RightParamGQLType(
-                               read=param['rights']['read'] if 'read' in param['rights'] else None,
-                               write=param['rights']['write'] if 'write' in param['rights'] else None,
-                               update=param['rights']['update'] if 'update' in param['rights'] else None,
-                               replace=param['rights']['replace'] if 'replace' in param['rights'] else None,
-                           )
-                           label = LabelParamGQLType(
-                               en=param['label']['en'] if 'en' in param['label'] else None,
-                               fr=param['label']['fr'] if 'fr' in param['label'] else None,
-                           )
-                           option_set = [OptionParamGQLType(
-                               value=ov["value"],
-                               label=LabelParamGQLType(en=ov["label"]["en"], fr=ov["label"]["fr"])
-                           ) for ov in param["optionSet"]] if "optionSet" in param else []
-                           list_params.append(
-                                CalculationParamsGQLType(
-                                    type=param['type'],
-                                    name=param['name'],
-                                    label=label,
-                                    rights=rights,
-                                    option_set=option_set,
-                                    default_value=param['default'],
-                                )
-                           )
+                    # do not include None results
+                    if sr[1]:
+                        tranformed_signal_results.extend(sr[1])
+            # make parameter list from signal unique - discinct list of dict by 'name' keyword
+            tranformed_signal_results = list({v['name']: v for v in tranformed_signal_results}.values())
+            for param in tranformed_signal_results:
+                rights = RightParamGQLType(
+                    read=param['rights']['read'] if 'read' in param['rights'] else None,
+                    write=param['rights']['write'] if 'write' in param['rights'] else None,
+                    update=param['rights']['update'] if 'update' in param['rights'] else None,
+                    replace=param['rights']['replace'] if 'replace' in param['rights'] else None,
+                )
+                label = LabelParamGQLType(
+                    en=param['label']['en'] if 'en' in param['label'] else None,
+                    fr=param['label']['fr'] if 'fr' in param['label'] else None,
+                )
+                option_set = [OptionParamGQLType(
+                    value=ov["value"],
+                    label=LabelParamGQLType(en=ov["label"]["en"], fr=ov["label"]["fr"])
+                ) for ov in param["optionSet"]] if "optionSet" in param else []
+                list_params.append(
+                    CalculationParamsGQLType(
+                        type=param['type'],
+                        name=param['name'],
+                        label=label,
+                        rights=rights,
+                        option_set=option_set,
+                        default_value=param['default'],
+                    )
+                )
         return CalculationParamsListGQLType(list_params)
 
     def resolve_linked_class(parent, info, **kwargs):
