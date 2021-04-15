@@ -16,7 +16,7 @@ CLASS_RULE_PARAM_VALIDATION = [
                     "replace": "151206",
                 },
                 'relevance': "True",
-                'condition': ".$_>1",
+                'condition': "$_>1",
                 'optionSet': [
                     {
                         "value": "5",
