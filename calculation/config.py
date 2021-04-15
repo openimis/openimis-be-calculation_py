@@ -16,7 +16,7 @@ CLASS_RULE_PARAM_VALIDATION = [
                     "replace": "151206",
                 },
                 'relevance': "True",
-                'condition': "$_>1",
+                'condition': "INPUT>1",
                 'optionSet': [
                     {
                         "value": "5",
@@ -77,7 +77,7 @@ CLASS_RULE_PARAM_VALIDATION = [
                     "replace": "152103",
                 },
                 "relevance": "True",
-                "condition": "$_>100",
+                "condition": "INPUT>100",
                 "default": ""
             }
         ],
@@ -99,7 +99,7 @@ CLASS_RULE_PARAM_VALIDATION = [
                     "replace": "150206",
                 },
                 "relevance": "True",
-                "condition": "$_>100",
+                "condition": "INPUT>100",
                 "default": ""
             }
         ],
