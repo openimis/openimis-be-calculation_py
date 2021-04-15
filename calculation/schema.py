@@ -42,7 +42,7 @@ class CalculationParamsGQLType(graphene.ObjectType):
     rights = graphene.Field(RightParamGQLType)
     option_set = graphene.List(OptionParamGQLType)
     relevance = graphene.Boolean()
-    condition = graphene.JSONString()
+    condition = graphene.String()
     default_value = graphene.String()
 
 
