@@ -25,6 +25,7 @@ class ContributionValuationRule(AbsCalculationRule):
     signal_get_param = Signal(providing_args=[])
     signal_get_linked_class = Signal(providing_args=[])
     signal_calculate_event = Signal(providing_args=[])
+    signal_convert_from_to = Signal(providing_args=[])
 
     @classmethod
     def ready(cls):
