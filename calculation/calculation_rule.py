@@ -2,7 +2,7 @@ import json
 
 from .apps import AbsCalculationRule
 from .config import CLASS_RULE_PARAM_VALIDATION, \
-    DESCRIPTION_CONTRIBUTION_VALUATION
+    DESCRIPTION_CONTRIBUTION_VALUATION, FROM_TO
 from contribution_plan.models import ContributionPlanBundleDetails
 from core.signals import Signal
 from core import datetime
@@ -19,6 +19,7 @@ class ContributionValuationRule(AbsCalculationRule):
     date_valid_from = datetime.datetime(2000, 1, 1)
     date_valid_to = None
     status = "active"
+    from_to = FROM_TO
 
     signal_get_rule_name = Signal(providing_args=[])
     signal_get_rule_details = Signal(providing_args=[])

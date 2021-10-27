@@ -111,3 +111,5 @@ DESCRIPTION_CONTRIBUTION_VALUATION = F"" \
     F"and PHinsuree and the percentage in the Contribution plan" \
     F" so when a contract valuation is requested then the calculation will" \
     F" determine the value based on the contract details income and CP percentage"
+
+FROM_TO = []
