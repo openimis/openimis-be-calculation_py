@@ -13,6 +13,8 @@ class CalculationRulesGQLType(graphene.ObjectType):
     date_valid_from = graphene.Date()
     date_valid_to = graphene.Date()
     from_to = graphene.JSONString()
+    type = graphene.String()
+    sub_type = graphene.String()
 
 
 class CalculationRulesListGQLType(graphene.ObjectType):
@@ -102,6 +104,8 @@ class Query(graphene.ObjectType):
                                 date_valid_from=rule.date_valid_from,
                                 date_valid_to=rule.date_valid_to,
                                 from_to=rule.from_to,
+                                type=rule.type,
+                                sub_type =rule.sub_type
                             )
                         )
         return CalculationRulesListGQLType(list_cr)
@@ -122,6 +126,8 @@ class Query(graphene.ObjectType):
                     date_valid_from=cr.date_valid_from,
                     date_valid_to=cr.date_valid_to,
                     from_to=cr.from_to,
+                    type=cr.type,
+                    sub_type=cr.sub_type
                 )
             )
         return CalculationRulesListGQLType(list_cr)

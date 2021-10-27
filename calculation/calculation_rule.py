@@ -20,6 +20,8 @@ class ContributionValuationRule(AbsCalculationRule):
     date_valid_to = None
     status = "active"
     from_to = FROM_TO
+    type = ""
+    sub_type = ""
 
     signal_get_rule_name = Signal(providing_args=[])
     signal_get_rule_details = Signal(providing_args=[])
