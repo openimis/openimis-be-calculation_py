@@ -61,19 +61,3 @@ def get_linked_class(class_name_list=None):
                 if result_signal:
                     return_list_class.extend(result_signal)
     return return_list_class
-
-
-def run_convert(instance, convert_from, convert_to, user=None, context=None):
-    for calculation_rule in CALCULATION_RULES:
-        result_signal = calculation_rule.signal_convert_from_to.send(
-            sender=instance.__class__.__name__,
-            instance=instance,
-            convert_from=convert_from,
-            convert_to=convert_to,
-            user=user,
-            context=context
-        )
-        if result_signal:
-            return result_signal
-    # if no listened calculation rules - return None
-    return None
