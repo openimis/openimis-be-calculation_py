@@ -2,7 +2,7 @@ import json
 
 from .apps import AbsCalculationRule
 from .config import CLASS_RULE_PARAM_VALIDATION, CLASS_RULE_PARAM_VALIDATION2, \
-    DESCRIPTION_CONTRIBUTION_VALUATION
+    DESCRIPTION_CONTRIBUTION_VALUATION, FROM_TO
 from contribution_plan.models import ContributionPlanBundleDetails
 from core.signals import Signal
 from core import datetime
@@ -19,12 +19,16 @@ class ContributionValuationRule(AbsCalculationRule):
     date_valid_from = datetime.datetime(2000, 1, 1)
     date_valid_to = None
     status = "active"
+    from_to = FROM_TO
+    type = ""
+    sub_type = ""
 
     signal_get_rule_name = Signal(providing_args=[])
     signal_get_rule_details = Signal(providing_args=[])
     signal_get_param = Signal(providing_args=[])
     signal_get_linked_class = Signal(providing_args=[])
     signal_calculate_event = Signal(providing_args=[])
+    signal_convert_from_to = Signal(providing_args=[])
 
     @classmethod
     def ready(cls):
@@ -41,7 +45,7 @@ class ContributionValuationRule(AbsCalculationRule):
                 cls.signal_calculate_event.connect(cls.run_calculation_rules, dispatch_uid="on_calculate_event_signal")
 
     @classmethod
-    def active_for_object(cls, instance, context):
+    def active_for_object(cls, instance, context, type='account_receivable', sub_type='contribution'):
         return instance.__class__.__name__ == "ContractContributionPlanDetails" \
                and context in ["create", "update"] \
                and cls.check_calculation(instance)
@@ -149,12 +153,16 @@ class ContributionValuationRule_2(AbsCalculationRule):
     date_valid_from = datetime.datetime(2000, 1, 1)
     date_valid_to = None
     status = "active"
+    from_to = FROM_TO
+    type = ""
+    sub_type = ""
 
     signal_get_rule_name = Signal(providing_args=[])
     signal_get_rule_details = Signal(providing_args=[])
     signal_get_param = Signal(providing_args=[])
     signal_get_linked_class = Signal(providing_args=[])
     signal_calculate_event = Signal(providing_args=[])
+    signal_convert_from_to = Signal(providing_args=[])
 
     @classmethod
     def ready(cls):
@@ -171,7 +179,7 @@ class ContributionValuationRule_2(AbsCalculationRule):
                 cls.signal_calculate_event.connect(cls.run_calculation_rules, dispatch_uid="on_calculate_event_signal")
 
     @classmethod
-    def active_for_object(cls, instance, context):
+    def active_for_object(cls, instance, context, type='account_receivable', sub_type='contribution'):
         return instance.__class__.__name__ == "ContractContributionPlanDetails" \
                and context in ["create", "update"] \
                and cls.check_calculation(instance)
