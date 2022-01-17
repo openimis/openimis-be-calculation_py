@@ -33,7 +33,7 @@ class ContributionValuationRule(AbsCalculationRule):
     @classmethod
     def ready(cls):
         now = datetime.datetime.now()
-        condition_is_valid = (now >= cls.date_valid_from and now <= cls.date_valid_to) \
+        condition_is_valid = (cls.date_valid_from <= now <= cls.date_valid_to) \
             if cls.date_valid_to else (now >= cls.date_valid_from and cls.date_valid_to is None)
         if condition_is_valid:
             if cls.status == "active":
@@ -81,7 +81,7 @@ class ContributionValuationRule(AbsCalculationRule):
         return match
 
     @classmethod
-    def calculate(cls, instance, *args):
+    def calculate(cls, instance, *args, **kwargs):
         if instance.__class__.__name__ == "ContractContributionPlanDetails":
             # check type of json_ext - in case of string - json.loads
             cp_params, cd_params = instance.contribution_plan.json_ext, instance.contract_details.json_ext
@@ -124,7 +124,7 @@ class ContributionValuationRule(AbsCalculationRule):
     @classmethod
     def get_linked_class(cls, sender, class_name, **kwargs):
         list_class = []
-        if class_name != None:
+        if class_name is not None:
             model_class = ContentType.objects.filter(model=class_name).first()
             if model_class:
                 model_class = model_class.model_class()
@@ -167,7 +167,7 @@ class ContributionValuationRule_2(AbsCalculationRule):
     @classmethod
     def ready(cls):
         now = datetime.datetime.now()
-        condition_is_valid = (now >= cls.date_valid_from and now <= cls.date_valid_to) \
+        condition_is_valid = (cls.date_valid_from <= now <= cls.date_valid_to) \
             if cls.date_valid_to else (now >= cls.date_valid_from and cls.date_valid_to is None)
         if condition_is_valid:
             if cls.status == "active":
@@ -215,7 +215,7 @@ class ContributionValuationRule_2(AbsCalculationRule):
         return match
 
     @classmethod
-    def calculate(cls, instance, *args):
+    def calculate(cls, instance, *args, **kwargs):
         if instance.__class__.__name__ == "ContractContributionPlanDetails":
             # check type of json_ext - in case of string - json.loads
             cp_params, cd_params = instance.contribution_plan.json_ext, instance.contract_details.json_ext
