@@ -66,6 +66,7 @@ class Query(graphene.ObjectType):
 
     calculation_rules = graphene.Field(
         CalculationRulesListGQLType,
+        calculation=graphene.Argument(graphene.UUID, required=False),
     )
 
     calculation_params = graphene.Field(
@@ -112,24 +113,46 @@ class Query(graphene.ObjectType):
 
     def resolve_calculation_rules(parent, info, **kwargs):
         if not info.context.user.has_perms(CalculationConfig.gql_query_calculation_rule_perms):
-           raise PermissionError("Unauthorized")
+            raise PermissionError("Unauthorized")
 
-        list_cr = []
-        for cr in CALCULATION_RULES:
-            list_cr.append(
-                CalculationRulesGQLType(
-                    calculation_class_name=cr.calculation_rule_name,
-                    status=cr.status,
-                    description=cr.description,
-                    uuid=cr.uuid,
-                    class_param=cr.impacted_class_parameter,
-                    date_valid_from=cr.date_valid_from,
-                    date_valid_to=cr.date_valid_to,
-                    from_to=cr.from_to,
-                    type=cr.type,
-                    sub_type=cr.sub_type
+        calculation = kwargs.get("calculation", None)
+
+        if calculation:
+            list_cr = []
+            for cr in CALCULATION_RULES:
+                calculation = f'{calculation}'
+                if cr.uuid == calculation:
+                    list_cr.append(
+                        CalculationRulesGQLType(
+                            calculation_class_name=cr.calculation_rule_name,
+                            status=cr.status,
+                            description=cr.description,
+                            uuid=cr.uuid,
+                            class_param=cr.impacted_class_parameter,
+                            date_valid_from=cr.date_valid_from,
+                            date_valid_to=cr.date_valid_to,
+                            from_to=cr.from_to,
+                            type=cr.type,
+                            sub_type=cr.sub_type
+                        )
+                    )
+        else:
+            list_cr = []
+            for cr in CALCULATION_RULES:
+                list_cr.append(
+                    CalculationRulesGQLType(
+                        calculation_class_name=cr.calculation_rule_name,
+                        status=cr.status,
+                        description=cr.description,
+                        uuid=cr.uuid,
+                        class_param=cr.impacted_class_parameter,
+                        date_valid_from=cr.date_valid_from,
+                        date_valid_to=cr.date_valid_to,
+                        from_to=cr.from_to,
+                        type=cr.type,
+                        sub_type=cr.sub_type
+                    )
                 )
-            )
         return CalculationRulesListGQLType(list_cr)
 
     def resolve_calculation_params(parent, info, **kwargs):
@@ -212,5 +235,6 @@ class Query(graphene.ObjectType):
         class_name_list = kwargs.get("class_name_list", None)
         list_signal_result = get_linked_class(class_name_list=class_name_list)
         for sr in list_signal_result:
-            result_linked_class = result_linked_class + sr[1]
+            if sr[1]:
+                result_linked_class = result_linked_class + sr[1]
         return LinkedClassListGQLType(list(set(result_linked_class)))
