@@ -237,4 +237,9 @@ class Query(graphene.ObjectType):
         for sr in list_signal_result:
             if sr[1]:
                 result_linked_class = result_linked_class + sr[1]
-        return LinkedClassListGQLType(list(set(result_linked_class)))
+        result_linked_class = list(set(result_linked_class))
+        # remove product when we have PaymentPlan/ContributionPlan object
+        if 'PaymentPlan' in class_name_list or 'ContributionPlan' in class_name_list:
+            if 'Product' in result_linked_class:
+                result_linked_class.remove('Product')
+        return LinkedClassListGQLType(result_linked_class)
