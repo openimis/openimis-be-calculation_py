@@ -107,7 +107,7 @@ class Query(graphene.ObjectType):
                                 date_valid_to=rule.date_valid_to,
                                 from_to=rule.from_to,
                                 type=rule.type,
-                                sub_type =rule.sub_type
+                                sub_type=rule.sub_type
                             )
                         )
         return CalculationRulesListGQLType(list_cr)
@@ -117,15 +117,15 @@ class Query(graphene.ObjectType):
             raise PermissionError("Unauthorized")
 
         calculation = kwargs.get("calculation", None)
-        calcrule_type = kwargs.get("calcrule_type", 'None')
+        calcrule_type = kwargs.get("calcrule_type", None)
 
-        if calculation or calcrule_type != 'None':
+        if calculation or calcrule_type:
             list_cr = []
             for cr in CALCULATION_RULES:
                 calculation = f'{calculation}'
-                if (cr.uuid == calculation and calcrule_type in cr.calculation_rule_name) \
-                        or (cr.uuid == calculation and calcrule_type == 'None') \
-                        or (calculation == 'None' and calcrule_type in cr.calculation_rule_name):
+                if (cr.uuid == calculation and calcrule_type == cr.type) \
+                        or (cr.uuid == calculation and calcrule_type is None) \
+                        or (calculation == 'None' and calcrule_type == cr.type):
                     list_cr = _append_to_calcrule_list(list_cr, cr)
         else:
             list_cr = []
