@@ -81,7 +81,7 @@ class ContributionValuationRule(AbsCalculationRule):
         return match
 
     @classmethod
-    def calculate(cls, instance, *args, **kwargs):
+    def calculate(cls, instance, **kwargs):
         if instance.__class__.__name__ == "ContractContributionPlanDetails":
             # check type of json_ext - in case of string - json.loads
             cp_params, cd_params = instance.contribution_plan.json_ext, instance.contract_details.json_ext
@@ -215,7 +215,7 @@ class ContributionValuationRule_2(AbsCalculationRule):
         return match
 
     @classmethod
-    def calculate(cls, instance, *args, **kwargs):
+    def calculate(cls, instance, **kwargs):
         if instance.__class__.__name__ == "ContractContributionPlanDetails":
             # check type of json_ext - in case of string - json.loads
             cp_params, cd_params = instance.contribution_plan.json_ext, instance.contract_details.json_ext
