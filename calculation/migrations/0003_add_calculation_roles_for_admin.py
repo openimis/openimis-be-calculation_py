@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 MIGRATION_SQL = """
     /* Calculation */
     DECLARE @SystemRole INT
-    SELECT @SystemRole = role.RoleID from tblRole role where IsSystem=256;
+    SELECT @SystemRole = role.RoleID from tblRole role where IsSystem=64;
     /* Calculation search*/
     IF NOT EXISTS (SELECT * FROM [tblRoleRight] WHERE [RoleID] = @SystemRole AND [RightID] = 153001)
     BEGIN
@@ -30,5 +30,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL(MIGRATION_SQL)
+        migrations.RunSQL(sql=MIGRATION_SQL),
     ]

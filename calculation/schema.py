@@ -218,6 +218,7 @@ class Query(graphene.ObjectType):
                 result_linked_class = result_linked_class + sr[1]
         result_linked_class = list(set(result_linked_class))
         # remove product when we have PaymentPlan/ContributionPlan object
+        # TODO: find a more generic way to avoid loop cause by relationship objects (product-calcule) 
         if 'PaymentPlan' in class_name_list or 'ContributionPlan' in class_name_list:
             if 'Product' in result_linked_class:
                 result_linked_class.remove('Product')
