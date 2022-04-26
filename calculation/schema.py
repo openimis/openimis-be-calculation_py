@@ -176,6 +176,7 @@ class Query(graphene.ObjectType):
                     update=param['rights']['update'] if 'update' in param['rights'] else None,
                     replace=param['rights']['replace'] if 'replace' in param['rights'] else None,
                 )
+                #FIXME, either rely on locals (BEST case) or manage it generically
                 label = LabelParamGQLType(
                     en=param['label']['en'] if 'en' in param['label'] else None,
                     fr=param['label']['fr'] if 'fr' in param['label'] else None,
@@ -184,14 +185,7 @@ class Query(graphene.ObjectType):
                     value=ov["value"],
                     label=LabelParamGQLType(en=ov["label"]["en"], fr=ov["label"]["fr"])
                 ) for ov in param["optionSet"]] if "optionSet" in param else []
-                if "condition" in param:
-                    condition = param["condition"] if param["condition"] else None
-                else:
-                    condition = None
-                if "relevance" in param:
-                    relevance = param["relevance"] if param["relevance"] else None
-                else:
-                    relevance = None
+ 
                 list_params.append(
                     CalculationParamsGQLType(
                         type=param['type'],
@@ -199,9 +193,9 @@ class Query(graphene.ObjectType):
                         label=label,
                         rights=rights,
                         option_set=option_set,
-                        relevance=relevance,
-                        condition=condition,
-                        default_value=param['default'] if 'default' in param else "null" ,
+                        relevance=param["relevance"] if "relevance" in param and param["relevance"] is not None else True,
+                        condition= param["condition"] if "condition" in param and param["condition"] is not None else True,
+                        default_value=param['default'] if 'default' in param and param['default'] is not None else "null" ,
                     )
                 )
         return CalculationParamsListGQLType(list_params)
