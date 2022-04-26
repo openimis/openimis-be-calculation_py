@@ -201,7 +201,7 @@ class Query(graphene.ObjectType):
                         option_set=option_set,
                         relevance=relevance,
                         condition=condition,
-                        default_value=param['default'],
+                        default_value=param['default'] if 'default' in param else "null" ,
                     )
                 )
         return CalculationParamsListGQLType(list_params)
