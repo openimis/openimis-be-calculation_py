@@ -185,6 +185,15 @@ class Query(graphene.ObjectType):
                     value=ov["value"],
                     label=LabelParamGQLType(en=ov["label"]["en"], fr=ov["label"]["fr"])
                 ) for ov in param["optionSet"]] if "optionSet" in param else []
+
+                if "condition" in param:
+                    condition = param["condition"] if param["condition"] else None
+                else:
+                    condition = None
+                if "relevance" in param:
+                    relevance = param["relevance"] if param["relevance"] else None
+                else:
+                    relevance = None
  
                 list_params.append(
                     CalculationParamsGQLType(
@@ -193,9 +202,9 @@ class Query(graphene.ObjectType):
                         label=label,
                         rights=rights,
                         option_set=option_set,
-                        relevance=param["relevance"] if "relevance" in param and param["relevance"] is not None else True,
-                        condition= param["condition"] if "condition" in param and param["condition"] is not None else True,
-                        default_value=param['default'] if 'default' in param and param['default'] is not None else "null" ,
+                        relevance=relevance,
+                        condition=condition,
+                        default_value=param['default'] if 'default' in param else "null",
                     )
                 )
         return CalculationParamsListGQLType(list_params)
