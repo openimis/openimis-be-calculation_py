@@ -20,6 +20,10 @@ def get_rule_details(class_name):
             list_rule_details.extend(result_signal)
     return list_rule_details
 
+def get_calculation_object(uuid):
+    for calculation_rule in CALCULATION_RULES:
+        if str(calculation_rule.uuid) == str(uuid):
+            return calculation_rule
 
 def run_calculation_rules(instance, context, user):
     for calculation_rule in CALCULATION_RULES:
