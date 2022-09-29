@@ -21,12 +21,12 @@ def get_rule_details(class_name):
     return list_rule_details
 
 
-def run_calculation_rules(instance, context, user):
+def run_calculation_rules(instance, context, user, **kwargs):
     for calculation_rule in CALCULATION_RULES:
         result_signal = calculation_rule.signal_calculate_event.send(
-            sender=instance.__class__.__name__, instance=instance, user=user, context=context
+            sender=instance.__class__.__name__, instance=instance, user=user, context=context, **kwargs
         )
-        if result_signal:
+        if result_signal[0][1]:
             return result_signal
     # if no listened calculation rules - return None
     return None

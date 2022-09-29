@@ -44,7 +44,7 @@ class CalculationParamsGQLType(graphene.ObjectType):
     label = graphene.Field(LabelParamGQLType)
     rights = graphene.Field(RightParamGQLType)
     option_set = graphene.List(OptionParamGQLType)
-    relevance = graphene.Boolean()
+    relevance = graphene.String()
     condition = graphene.String()
     default_value = graphene.String()
 
@@ -66,6 +66,8 @@ class Query(graphene.ObjectType):
 
     calculation_rules = graphene.Field(
         CalculationRulesListGQLType,
+        calculation=graphene.Argument(graphene.UUID, required=False),
+        calcrule_type=graphene.Argument(graphene.String, required=False),
     )
 
     calculation_params = graphene.Field(
@@ -105,31 +107,31 @@ class Query(graphene.ObjectType):
                                 date_valid_to=rule.date_valid_to,
                                 from_to=rule.from_to,
                                 type=rule.type,
-                                sub_type =rule.sub_type
+                                sub_type=rule.sub_type
                             )
                         )
         return CalculationRulesListGQLType(list_cr)
 
     def resolve_calculation_rules(parent, info, **kwargs):
         if not info.context.user.has_perms(CalculationConfig.gql_query_calculation_rule_perms):
-           raise PermissionError("Unauthorized")
+            raise PermissionError("Unauthorized")
 
-        list_cr = []
-        for cr in CALCULATION_RULES:
-            list_cr.append(
-                CalculationRulesGQLType(
-                    calculation_class_name=cr.calculation_rule_name,
-                    status=cr.status,
-                    description=cr.description,
-                    uuid=cr.uuid,
-                    class_param=cr.impacted_class_parameter,
-                    date_valid_from=cr.date_valid_from,
-                    date_valid_to=cr.date_valid_to,
-                    from_to=cr.from_to,
-                    type=cr.type,
-                    sub_type=cr.sub_type
-                )
-            )
+        calculation = kwargs.get("calculation", None)
+        calcrule_type = kwargs.get("calcrule_type", None)
+
+        if calculation or calcrule_type:
+            list_cr = []
+            for cr in CALCULATION_RULES:
+                calculation = f'{calculation}'
+                if (cr.uuid == calculation and calcrule_type == cr.type) \
+                        or (cr.uuid == calculation and calcrule_type is None) \
+                        or (calculation == 'None' and calcrule_type == cr.type):
+                    list_cr = _append_to_calcrule_list(list_cr, cr)
+        else:
+            list_cr = []
+            for cr in CALCULATION_RULES:
+                list_cr = _append_to_calcrule_list(list_cr, cr)
+
         return CalculationRulesListGQLType(list_cr)
 
     def resolve_calculation_params(parent, info, **kwargs):
@@ -174,6 +176,7 @@ class Query(graphene.ObjectType):
                     update=param['rights']['update'] if 'update' in param['rights'] else None,
                     replace=param['rights']['replace'] if 'replace' in param['rights'] else None,
                 )
+                #FIXME, either rely on locals (BEST case) or manage it generically
                 label = LabelParamGQLType(
                     en=param['label']['en'] if 'en' in param['label'] else None,
                     fr=param['label']['fr'] if 'fr' in param['label'] else None,
@@ -182,6 +185,7 @@ class Query(graphene.ObjectType):
                     value=ov["value"],
                     label=LabelParamGQLType(en=ov["label"]["en"], fr=ov["label"]["fr"])
                 ) for ov in param["optionSet"]] if "optionSet" in param else []
+
                 if "condition" in param:
                     condition = param["condition"] if param["condition"] else None
                 else:
@@ -190,6 +194,7 @@ class Query(graphene.ObjectType):
                     relevance = param["relevance"] if param["relevance"] else None
                 else:
                     relevance = None
+ 
                 list_params.append(
                     CalculationParamsGQLType(
                         type=param['type'],
@@ -199,7 +204,7 @@ class Query(graphene.ObjectType):
                         option_set=option_set,
                         relevance=relevance,
                         condition=condition,
-                        default_value=param['default'],
+                        default_value=param['default'] if 'default' in param else "null",
                     )
                 )
         return CalculationParamsListGQLType(list_params)
@@ -212,5 +217,30 @@ class Query(graphene.ObjectType):
         class_name_list = kwargs.get("class_name_list", None)
         list_signal_result = get_linked_class(class_name_list=class_name_list)
         for sr in list_signal_result:
-            result_linked_class = result_linked_class + sr[1]
-        return LinkedClassListGQLType(list(set(result_linked_class)))
+            if sr[1]:
+                result_linked_class = result_linked_class + sr[1]
+        result_linked_class = list(set(result_linked_class))
+        # remove product when we have PaymentPlan/ContributionPlan object
+        # TODO: find a more generic way to avoid loop cause by relationship objects (product-calcule) 
+        if 'PaymentPlan' in class_name_list or 'ContributionPlan' in class_name_list:
+            if 'Product' in result_linked_class:
+                result_linked_class.remove('Product')
+        return LinkedClassListGQLType(result_linked_class)
+
+
+def _append_to_calcrule_list(list_cr, cr):
+    list_cr.append(
+        CalculationRulesGQLType(
+            calculation_class_name=cr.calculation_rule_name,
+            status=cr.status,
+            description=cr.description,
+            uuid=cr.uuid,
+            class_param=cr.impacted_class_parameter,
+            date_valid_from=cr.date_valid_from,
+            date_valid_to=cr.date_valid_to,
+            from_to=cr.from_to,
+            type=cr.type,
+            sub_type=cr.sub_type
+        )
+    )
+    return list_cr
