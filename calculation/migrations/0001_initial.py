@@ -5,7 +5,6 @@ import dirtyfields.dirtyfields
 from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
-import jsonfallback.fields
 import simple_history.models
 
 
@@ -23,7 +22,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.UUIDField(db_column='UUID', default=None, editable=False, primary_key=True, serialize=False)),
                 ('is_deleted', models.BooleanField(db_column='isDeleted', default=False)),
-                ('json_ext', jsonfallback.fields.FallbackJSONField(blank=True, db_column='Json_ext', null=True)),
+                ('json_ext', models.JSONField(blank=True, db_column='Json_ext', null=True)),
                 ('date_created', models.DateTimeField(db_column='DateCreated', null=True)),
                 ('date_updated', models.DateTimeField(db_column='DateUpdated', null=True)),
                 ('version', models.IntegerField(default=1)),
@@ -47,14 +46,14 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.UUIDField(db_column='UUID', db_index=True, default=None, editable=False)),
                 ('is_deleted', models.BooleanField(db_column='isDeleted', default=False)),
-                ('json_ext', jsonfallback.fields.FallbackJSONField(blank=True, db_column='Json_ext', null=True)),
+                ('json_ext', models.JSONField(blank=True, db_column='Json_ext', null=True)),
                 ('date_created', models.DateTimeField(db_column='DateCreated', null=True)),
                 ('date_updated', models.DateTimeField(db_column='DateUpdated', null=True)),
                 ('version', models.IntegerField(default=1)),
                 ('status', models.IntegerField(blank=True, db_column='Status', null=True)),
                 ('main', models.BooleanField(blank=True, db_column='Main', null=True)),
-                ('params', jsonfallback.fields.FallbackJSONField(blank=True, db_column='Params', null=True)),
-                ('class_params', jsonfallback.fields.FallbackJSONField(blank=True, db_column='ClassParams', null=True)),
+                ('params', models.JSONField(blank=True, db_column='Params', null=True)),
+                ('class_params', models.JSONField(blank=True, db_column='ClassParams', null=True)),
                 ('history_id', models.AutoField(primary_key=True, serialize=False)),
                 ('history_date', models.DateTimeField()),
                 ('history_change_reason', models.CharField(max_length=100, null=True)),
@@ -76,7 +75,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.UUIDField(db_column='UUID', db_index=True, default=None, editable=False)),
                 ('is_deleted', models.BooleanField(db_column='isDeleted', default=False)),
-                ('json_ext', jsonfallback.fields.FallbackJSONField(blank=True, db_column='Json_ext', null=True)),
+                ('json_ext', models.JSONField(blank=True, db_column='Json_ext', null=True)),
                 ('date_created', models.DateTimeField(db_column='DateCreated', null=True)),
                 ('date_updated', models.DateTimeField(db_column='DateUpdated', null=True)),
                 ('version', models.IntegerField(default=1)),
@@ -107,14 +106,14 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.UUIDField(db_column='UUID', default=None, editable=False, primary_key=True, serialize=False)),
                 ('is_deleted', models.BooleanField(db_column='isDeleted', default=False)),
-                ('json_ext', jsonfallback.fields.FallbackJSONField(blank=True, db_column='Json_ext', null=True)),
+                ('json_ext', models.JSONField(blank=True, db_column='Json_ext', null=True)),
                 ('date_created', models.DateTimeField(db_column='DateCreated', null=True)),
                 ('date_updated', models.DateTimeField(db_column='DateUpdated', null=True)),
                 ('version', models.IntegerField(default=1)),
                 ('status', models.IntegerField(blank=True, db_column='Status', null=True)),
                 ('main', models.BooleanField(blank=True, db_column='Main', null=True)),
-                ('params', jsonfallback.fields.FallbackJSONField(blank=True, db_column='Params', null=True)),
-                ('class_params', jsonfallback.fields.FallbackJSONField(blank=True, db_column='ClassParams', null=True)),
+                ('params', models.JSONField(blank=True, db_column='Params', null=True)),
+                ('class_params', models.JSONField(blank=True, db_column='ClassParams', null=True)),
                 ('calculation_rules', models.ForeignKey(db_column='CalculationRulesUUID', on_delete=django.db.models.deletion.DO_NOTHING, to='calculation.CalculationRules')),
                 ('user_created', models.ForeignKey(db_column='UserCreatedUUID', on_delete=django.db.models.deletion.DO_NOTHING, related_name='calculationrulesdetails_user_created', to=settings.AUTH_USER_MODEL)),
                 ('user_updated', models.ForeignKey(db_column='UserUpdatedUUID', on_delete=django.db.models.deletion.DO_NOTHING, related_name='calculationrulesdetails_user_updated', to=settings.AUTH_USER_MODEL)),
