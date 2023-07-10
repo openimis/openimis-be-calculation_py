@@ -152,7 +152,7 @@ class Query(graphene.ObjectType):
                     instance = calculation_rule
         else:
             # get the instance class name to get instance object by uuid
-            instance_type = ContentType.objects.get(model=f'{instance_class_name}')
+            instance_type = ContentType.objects.get(model__iexact=f'{instance_class_name}')
             instance_class = instance_type.model_class()
             instance = instance_class.objects.get(id=instance_id)
 
