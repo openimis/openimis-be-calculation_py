@@ -31,15 +31,13 @@ class CalculationConfig(AppConfig):
     gql_query_calculation_rule_perms = []
     gql_mutation_update_calculation_rule_perms = []
 
-    def _configure_permissions(self, cfg):
-        CalculationConfig.gql_query_calculation_rule_perms = cfg[
-            "gql_query_calculation_rule_perms"]
-        CalculationConfig.gql_mutation_update_calculation_rule_perms = cfg[
-            "gql_mutation_update_calculation_rule_perms"
-        ]
+    def __load_config(self, cfg):
+        for field in cfg:
+            if hasattr(CalculationConfig, field):
+                setattr(CalculationConfig, field, cfg[field])
 
     def ready(self):
         from core.models import ModuleConfiguration
         cfg = ModuleConfiguration.get_or_default(MODULE_NAME, DEFAULT_CFG)
-        self._configure_permissions(cfg)
+        self.__load_config(cfg)
         read_all_calculation_rules()
