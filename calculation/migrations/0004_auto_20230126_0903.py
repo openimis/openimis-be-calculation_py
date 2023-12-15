@@ -7,6 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('calculation', '0003_add_calculation_roles_for_admin'),
+        ('contribution_plan', '0009_contributionplan_roles_for_admin'),
     ]
 
     operations = [
