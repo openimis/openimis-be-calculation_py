@@ -44,7 +44,7 @@ CLASS_RULE_PARAM_VALIDATION = [
             },
             {
                 "type": "checkbox",
-                "name": "includeFamilly",
+                "name": "includeFamily",
                 "label": {
                     "en": "include family members",
                     "fr": "Inclure les membres de la familles"
