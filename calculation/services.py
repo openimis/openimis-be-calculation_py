@@ -30,8 +30,9 @@ def run_calculation_rules(instance, context, user, **kwargs):
         result_signal = calculation_rule.signal_calculate_event.send(
             sender=instance.__class__.__name__, instance=instance, user=user, context=context, **kwargs
         )
-        if result_signal[0][1]:
+        if  result_signal and len(result_signal) and result_signal[0][1]:
             return result_signal
+
     # if no listened calculation rules - return None
     return None
 
