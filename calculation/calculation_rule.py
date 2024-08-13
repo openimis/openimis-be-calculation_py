@@ -1,6 +1,6 @@
 import json
 
-from .apps import AbsCalculationRule
+from .apps import AbsStrategy
 from .config import CLASS_RULE_PARAM_VALIDATION, \
     DESCRIPTION_CONTRIBUTION_VALUATION, FROM_TO
 from contribution_plan.models import ContributionPlanBundleDetails
@@ -10,7 +10,7 @@ from django.contrib.contenttypes.models import ContentType
 from policyholder.models import PolicyHolderInsuree
 
 
-class ContributionValuationRule(AbsCalculationRule):
+class ContributionValuationRule(AbsStrategy):
     version = 1
     uuid = "0e1b6dd4-04a0-4ee6-ac47-2a99cfa5e9a8"
     calculation_rule_name = "CV: percent of income"
@@ -23,26 +23,7 @@ class ContributionValuationRule(AbsCalculationRule):
     type = "account_receivable"
     sub_type = "contribution"
 
-    signal_get_rule_name = Signal([])
-    signal_get_rule_details = Signal([])
-    signal_get_param = Signal([])
-    signal_get_linked_class = Signal([])
-    signal_calculate_event = Signal([])
-    signal_convert_from_to = Signal([])
 
-    @classmethod
-    def ready(cls):
-        now = datetime.datetime.now()
-        condition_is_valid = (cls.date_valid_from <= now <= cls.date_valid_to) \
-            if cls.date_valid_to else (now >= cls.date_valid_from and cls.date_valid_to is None)
-        if condition_is_valid:
-            if cls.status == "active":
-                # register signals getParameter to getParameter signal and getLinkedClass ot getLinkedClass signal
-                cls.signal_get_rule_name.connect(cls.get_rule_name, dispatch_uid="on_get_rule_name_signal")
-                cls.signal_get_rule_details.connect(cls.get_rule_details, dispatch_uid="on_get_rule_details_signal")
-                cls.signal_get_param.connect(cls.get_parameters, dispatch_uid="on_get_param_signal")
-                cls.signal_get_linked_class.connect(cls.get_linked_class, dispatch_uid="on_get_linked_class_signal")
-                cls.signal_calculate_event.connect(cls.run_calculation_rules, dispatch_uid="on_calculate_event_signal")
 
     @classmethod
     def active_for_object(cls, instance, context, type='account_receivable', sub_type='contribution'):
@@ -123,16 +104,8 @@ class ContributionValuationRule(AbsCalculationRule):
 
     @classmethod
     def get_linked_class(cls, sender, class_name, **kwargs):
-        list_class = []
-        if class_name is not None:
-            model_class = ContentType.objects.filter(model__iexact=class_name).first()
-            if model_class:
-                model_class = model_class.model_class()
-                list_class = list_class + \
-                             [f.remote_field.model.__name__ for f in model_class._meta.fields
-                              if f.get_internal_type() == 'ForeignKey' and f.remote_field.model.__name__ != "User"]
-        else:
-            list_class.append("Calculation")
+        list_class = super().get_linked_class(sender, class_name, **kwargs)
+
         # because we have calculation in ContributionPlan
         #  as uuid - we have to consider this case
         if class_name == "ContributionPlan":

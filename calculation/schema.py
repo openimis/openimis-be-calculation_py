@@ -95,7 +95,7 @@ class Query(graphene.ObjectType):
                 for sr in list_signal_result:
                     # get the signal result - calculation rule object
                     #  related to the input class name
-                    rule = sr[1]
+                    rule = sr
                     if rule:
                         list_cr.append(
                             CalculationRulesGQLType(
