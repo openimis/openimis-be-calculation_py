@@ -217,15 +217,15 @@ class Query(graphene.ObjectType):
         # get the params from query
         class_name_list = kwargs.get("class_name_list", None)
         list_signal_result = get_linked_class(class_name_list=class_name_list)
-        for sr in list_signal_result:
-            if sr[1]:
-                result_linked_class = result_linked_class + sr[1]
-        result_linked_class = list(set(result_linked_class))
+        result_linked_class = list(set(list_signal_result))
         # remove product when we have PaymentPlan/ContributionPlan object
-        # TODO: find a more generic way to avoid loop cause by relationship objects (product-calcule) 
-        if 'PaymentPlan' in class_name_list or 'ContributionPlan' in class_name_list:
-            if 'Product' in result_linked_class:
-                result_linked_class.remove('Product')
+        # TODO: find a more generic way to avoid loop cause by relationship objects (product-calcule)
+        if class_name_list:
+            if 'PaymentPlan' in class_name_list or 'ContributionPlan' in class_name_list:
+                if 'Product' in result_linked_class:
+                    result_linked_class.remove('Product')
+                if 'BenefitPlan' in result_linked_class:
+                    result_linked_class.remove('BenefitPlan')
         return LinkedClassListGQLType(result_linked_class)
 
 
