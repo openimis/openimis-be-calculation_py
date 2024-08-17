@@ -27,9 +27,10 @@ class ContributionValuationRule(AbsStrategy):
 
     @classmethod
     def active_for_object(cls, instance, context, type='account_receivable', sub_type='contribution'):
-        return instance.__class__.__name__ == "ContractContributionPlanDetails" \
-               and context in ["create", "update"] \
-               and cls.check_calculation(instance)
+        return (
+            instance.__class__.__name__ == "ContractContributionPlanDetails"
+            and  context in ["value", "members", "validity"]
+        ) and cls.check_calculation(instance)
 
     @classmethod
     def check_calculation(cls, instance):
@@ -63,44 +64,73 @@ class ContributionValuationRule(AbsStrategy):
 
     @classmethod
     def calculate(cls, instance, **kwargs):
+        context = kwargs.get('context', None)
         if instance.__class__.__name__ == "ContractContributionPlanDetails":
-            # check type of json_ext - in case of string - json.loads
-            cp_params, cd_params = instance.contribution_plan.json_ext, instance.contract_details.json_ext
-            ph_insuree = PolicyHolderInsuree.objects.filter(
-                insuree=instance.contract_details.insuree).first()
-            phi_params = ph_insuree.json_ext
-            if isinstance(cp_params, str):
-                cp_params = json.loads(cp_params)
-            if isinstance(cd_params, str):
-                cd_params = json.loads(cd_params)
-            if isinstance(phi_params, str):
-                phi_params = json.loads(phi_params)
-            # check if json external calculation rule in instance exists
-            if cp_params:
-                cp_params = cp_params["calculation_rule"] if "calculation_rule" in cp_params else None
-            if cd_params:
-                cd_params = cd_params["calculation_rule"] if "calculation_rule" in cd_params else None
-            if phi_params:
-                phi_params = phi_params["calculation_rule"] if "calculation_rule" in phi_params else None
-            if cp_params is not None and "rate" in cp_params:
-                rate = int(cp_params["rate"])
+            if context == 'value':
+                # check type of json_ext - in case of string - json.loads
+                cp_params, cd_params = instance.contribution_plan.json_ext, instance.contract_details.json_ext
+                ph_insuree = PolicyHolderInsuree.objects.filter(
+                    insuree=instance.contract_details.insuree).first()
+                phi_params = ph_insuree.json_ext
+                if isinstance(cp_params, str):
+                    cp_params = json.loads(cp_params)
+                if isinstance(cd_params, str):
+                    cd_params = json.loads(cd_params)
+                if isinstance(phi_params, str):
+                    phi_params = json.loads(phi_params)
+                # check if json external calculation rule in instance exists
+                if cp_params:
+                    cp_params = cp_params["calculation_rule"] if "calculation_rule" in cp_params else None
                 if cd_params:
-                    if "income" in cd_params:
-                        income = float(cd_params["income"])
+                    cd_params = cd_params["calculation_rule"] if "calculation_rule" in cd_params else None
+                if phi_params:
+                    phi_params = phi_params["calculation_rule"] if "calculation_rule" in phi_params else None
+                if cp_params is not None and "rate" in cp_params:
+                    rate = int(cp_params["rate"])
+                    if cd_params:
+                        if "income" in cd_params:
+                            income = float(cd_params["income"])
+                        elif "income" in phi_params:
+                            income = float(phi_params["income"])
+                        else:
+                            return False
                     elif "income" in phi_params:
                         income = float(phi_params["income"])
                     else:
                         return False
-                elif "income" in phi_params:
-                    income = float(phi_params["income"])
+                    value = float(income) * (rate / 100)
+                    return value
+                elif context == 'members':
+                    if instance.insuree.family:
+                        return list(instance.insuree.family.members.filter(validity_to__isnull=True))
+                    else:
+                        return [instance.insuree]
+
+            elif context == 'validity':
+                validity_from = kwargs.get('validity_from', None)
+                validity_to = kwargs.get('validity_to', None)
+                contract = None
+                if instance.__class__.__name__ == "Contract":
+                    contract = instance
+                elif instance.__class__.__name__ == "ContractContributionPlanDetails":
+                    contract = instance.contract_details.contract
+                if instance.__class__.__name__ == "ContractDetails":
+                    contract = instance.contract
+
+                
+                if contract:
+                    validity_from = validity_from or contract.date_valid_from
+                    validity_to = validity_to or contract.date_valid_to
+                    date_approved = contract.date_approved or validity_from
                 else:
-                    return False
-                value = float(income) * (rate / 100)
-                return value
-            else:
-                return False
-        else:
-            return False
+                    date_approved = validity_from
+                if validity_from and validity_to:
+                    return {
+                        'enroll_date': date_approved,
+                        'start_date': validity_from,
+                        'effective_date': validity_from,
+                        'expiry_date': validity_to
+                    }
 
     @classmethod
     def get_linked_class(cls, sender, class_name, **kwargs):
