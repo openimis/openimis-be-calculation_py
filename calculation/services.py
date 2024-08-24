@@ -6,19 +6,20 @@ from .calculation_rule import ContributionValuationRule
 def get_rule_name(class_name):
     list_rule_name = []
     for calculation_rule in CALCULATION_RULES:
-        result_signal = calculation_rule.signal_get_rule_name.send(sender=class_name, class_name=class_name)
+        result_signal = calculation_rule.get_rule_name(sender=class_name, class_name=class_name)
         if result_signal:
-            list_rule_name.extend(result_signal)
+            list_rule_name.append(result_signal)
     return list_rule_name
 
 
 def get_rule_details(class_name):
-    list_rule_details = []
+    dict_rule_details = {}
     for calculation_rule in CALCULATION_RULES:
-        result_signal = calculation_rule.signal_get_rule_details.send(sender=class_name, class_name=class_name)
+        result_signal = calculation_rule.get_rule_details(sender=class_name, class_name=class_name)
         if result_signal:
-            list_rule_details.extend(result_signal)
-    return list_rule_details
+            dict_rule_details.update(result_signal)
+    return dict_rule_details
+
 
 def get_calculation_object(uuid):
     for calculation_rule in CALCULATION_RULES:
@@ -27,11 +28,11 @@ def get_calculation_object(uuid):
 
 def run_calculation_rules(instance, context, user, **kwargs):
     for calculation_rule in CALCULATION_RULES:
-        result_signal = calculation_rule.signal_calculate_event.send(
+        result = calculation_rule.run_calculation_rules(
             sender=instance.__class__.__name__, instance=instance, user=user, context=context, **kwargs
         )
-        if  result_signal and len(result_signal) and result_signal[0][1]:
-            return result_signal
+        if result:
+            return result
 
     # if no listened calculation rules - return None
     return None
@@ -44,7 +45,7 @@ def get_parameters(class_name, instance):
     """
     list_parameters = []
     for calculation_rule in CALCULATION_RULES:
-        result_signal = calculation_rule.signal_get_param.send(
+        result_signal = calculation_rule.get_parameters(
             sender=instance, class_name=class_name, instance=instance
         )
         if result_signal:
@@ -54,15 +55,15 @@ def get_parameters(class_name, instance):
 
 
 def get_linked_class(class_name_list=None):
-    return_list_class = []
+    return_list_class = set()
     for calculation_rule in CALCULATION_RULES:
         if class_name_list == None:
-            result_signal = calculation_rule.signal_get_linked_class.send(sender="None", class_name=None)
+            result_signal = calculation_rule.get_linked_class(sender="None", class_name=None)
             if result_signal:
-                return_list_class.extend(result_signal)
+                return_list_class = return_list_class.union(set(result_signal))
         else:
             for class_name in class_name_list:
-                result_signal = calculation_rule.signal_get_linked_class.send(sender=class_name, class_name=class_name)
+                result_signal = calculation_rule.get_linked_class(sender=class_name, class_name=class_name)
                 if result_signal:
-                    return_list_class.extend(result_signal)
-    return return_list_class
+                    return_list_class = return_list_class.union(set(result_signal))
+    return list(return_list_class)

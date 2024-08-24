@@ -1,7 +1,7 @@
 import importlib
 import inspect
 
-from core.abs_calculation_rule import AbsCalculationRule
+from core.abs_calculation_rule import AbsStrategy
 from django.apps import AppConfig
 
 
