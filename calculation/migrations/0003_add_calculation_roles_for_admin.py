@@ -8,8 +8,8 @@ logger = logging.getLogger(__name__)
 
 
 def add_rights(apps, schema_editor):
-    insert_role_right_for_system(64, 153001)  # calculation
-    insert_role_right_for_system(64, 153003)  # calculation update
+    insert_role_right_for_system(64, 153001, apps)  # calculation
+    insert_role_right_for_system(64, 153003, apps)  # calculation update
 
 
 class Migration(migrations.Migration):
