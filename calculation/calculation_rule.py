@@ -1,6 +1,6 @@
 import json
 
-from .apps import AbsStrategy
+from core.abs_calculation_rule  import AbsStrategy
 from .config import CLASS_RULE_PARAM_VALIDATION, \
     DESCRIPTION_CONTRIBUTION_VALUATION, FROM_TO
 from contribution_plan.models import ContributionPlanBundleDetails
@@ -8,7 +8,7 @@ from core.signals import Signal
 from core import datetime
 from django.contrib.contenttypes.models import ContentType
 from policyholder.models import PolicyHolderInsuree
-
+from uuid import UUID
 
 class ContributionValuationRule(AbsStrategy):
     version = 1
@@ -42,9 +42,9 @@ class ContributionValuationRule(AbsStrategy):
             "ContractContributionPlanDetails", "ContributionPlanBundle"
         ]
         if class_name == "ABCMeta":
-            match = str(cls.uuid) == str(instance.uuid)
-        elif class_name == "ContributionPlan":
-            match = str(cls.uuid) == str(instance.calculation)
+            match = UUID(cls.uuid) == UUID(instance.uuid)
+        if class_name == "ContributionPlan":
+            match = UUID(cls.uuid) == UUID(instance.calculation)
         elif class_name == "ContributionPlanBundle":
             list_cpbd = list(ContributionPlanBundleDetails.objects.filter(
                 contribution_plan_bundle=instance

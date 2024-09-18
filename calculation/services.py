@@ -1,7 +1,7 @@
 from django.core.exceptions import PermissionDenied
 from .apps import CALCULATION_RULES
 from .calculation_rule import ContributionValuationRule
-
+from uuid import UUID
 
 def get_rule_name(class_name):
     list_rule_name = []
@@ -23,7 +23,7 @@ def get_rule_details(class_name):
 
 def get_calculation_object(uuid):
     for calculation_rule in CALCULATION_RULES:
-        if str(calculation_rule.uuid) == str(uuid):
+        if UUID(calculation_rule.uuid) == UUID(uuid):
             return calculation_rule
 
 def run_calculation_rules(instance, context, user, **kwargs):
