@@ -2,7 +2,7 @@ import graphene
 from .apps import CALCULATION_RULES, CalculationConfig
 from .services import get_rule_name, get_parameters, get_linked_class
 from django.contrib.contenttypes.models import ContentType
-
+from uuid import UUID
 
 class CalculationRulesGQLType(graphene.ObjectType):
     calculation_class_name = graphene.String()
@@ -124,8 +124,8 @@ class Query(graphene.ObjectType):
             list_cr = []
             for cr in CALCULATION_RULES:
                 calculation = f'{calculation}'
-                if (cr.uuid == calculation and calcrule_type == cr.type) \
-                        or (cr.uuid == calculation and calcrule_type is None) \
+                if (UUID(cr.uuid) == UUID(calculation) and calcrule_type == cr.type) \
+                        or (UUID(cr.uuid) == UUID(calculation) and calcrule_type is None) \
                         or (calculation == 'None' and calcrule_type == cr.type):
                     list_cr = _append_to_calcrule_list(list_cr, cr)
         else:
@@ -148,7 +148,7 @@ class Query(graphene.ObjectType):
         # if calculation class - it is not a model
         if instance_class_name == "Calculation":
             for calculation_rule in CALCULATION_RULES:
-                if calculation_rule.uuid == instance_id:
+                if UUID(calculation_rule.uuid) == UUID(instance_id):
                     instance = calculation_rule
         else:
             # get the instance class name to get instance object by uuid
