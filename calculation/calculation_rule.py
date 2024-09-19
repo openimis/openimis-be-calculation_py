@@ -42,9 +42,9 @@ class ContributionValuationRule(AbsStrategy):
             "ContractContributionPlanDetails", "ContributionPlanBundle"
         ]
         if class_name == "ABCMeta":
-            match = UUID(cls.uuid) == UUID(instance.uuid)
+            match = UUID(str(cls.uuid)) == UUID(str(instance.uuid))
         if class_name == "ContributionPlan":
-            match = UUID(cls.uuid) == UUID(instance.calculation)
+            match = UUID(str(cls.uuid)) == UUID(str(instance.calculation))
         elif class_name == "ContributionPlanBundle":
             list_cpbd = list(ContributionPlanBundleDetails.objects.filter(
                 contribution_plan_bundle=instance

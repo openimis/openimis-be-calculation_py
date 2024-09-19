@@ -16,14 +16,21 @@ def get_rule_details(class_name):
     dict_rule_details = {}
     for calculation_rule in CALCULATION_RULES:
         result_signal = calculation_rule.get_rule_details(sender=class_name, class_name=class_name)
-        if result_signal:
-            dict_rule_details.update(result_signal)
+        if result_signal and 'parameters' in result_signal:
+            if class_name not in dict_rule_details:
+                dict_rule_details[class_name] = result_signal['parameters']
+            else:
+                to_update = [
+                    p for p in result_signal['parameters'] 
+                    if all([p['name'] != sp['name'] for sp in dict_rule_details[class_name]])
+                ]
+                dict_rule_details[class_name] += to_update
     return dict_rule_details
 
 
 def get_calculation_object(uuid):
     for calculation_rule in CALCULATION_RULES:
-        if UUID(calculation_rule.uuid) == UUID(uuid):
+        if UUID(str(calculation_rule.uuid)) == UUID(str(uuid)):
             return calculation_rule
 
 def run_calculation_rules(instance, context, user, **kwargs):
