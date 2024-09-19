@@ -166,8 +166,8 @@ class Query(graphene.ObjectType):
                     # get the signal result - calculation param object
                     #  related to the input class name and instance
                     # do not include None results
-                    if sr[1]:
-                        tranformed_signal_results.extend(sr[1])
+                    if sr:
+                        tranformed_signal_results.append(sr)
             # make parameter list from signal unique - discinct list of dict by 'name' keyword
             tranformed_signal_results = list({v['name']: v for v in tranformed_signal_results}.values())
             for param in tranformed_signal_results:
