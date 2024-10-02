@@ -124,9 +124,12 @@ class Query(graphene.ObjectType):
             list_cr = []
             for cr in CALCULATION_RULES:
                 calculation = f'{calculation}'
-                if (UUID(cr.uuid) == calculation and calcrule_type == cr.type) \
-                        or (UUID(cr.uuid) == calculation and calcrule_type is None) \
-                        or (calculation == 'None' and calcrule_type == cr.type):
+                if (
+                    (calculation and 
+                    UUID(cr.uuid) == UUID(calculation) and 
+                    (calcrule_type == cr.type or calcrule_type is None)) or
+                    (calculation == 'None' and calcrule_type == cr.type)
+                ):
                     list_cr = _append_to_calcrule_list(list_cr, cr)
         else:
             list_cr = []
