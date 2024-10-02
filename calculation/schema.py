@@ -125,10 +125,13 @@ class Query(graphene.ObjectType):
             for cr in CALCULATION_RULES:
                 calculation = f'{calculation}'
                 if (
-                    (calculation and 
-                    UUID(cr.uuid) == UUID(calculation) and 
-                    (calcrule_type == cr.type or calcrule_type is None)) or
-                    (calculation == 'None' and calcrule_type == cr.type)
+                    (
+                        calculation and 
+                        UUID(cr.uuid) == UUID(calculation) and 
+                        (calcrule_type == cr.type or calcrule_type is None)
+                    ) or (
+                        calculation == 'None' and calcrule_type == cr.type
+                    )
                 ):
                     list_cr = _append_to_calcrule_list(list_cr, cr)
         else:
