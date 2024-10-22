@@ -43,7 +43,7 @@ class ContributionValuationRule(AbsStrategy):
         ]
         if class_name == "ABCMeta":
             match = UUID(str(cls.uuid)) == UUID(str(instance.uuid))
-        if class_name == "ContributionPlan":
+        elif class_name == "ContributionPlan":
             match = UUID(str(cls.uuid)) == UUID(str(instance.calculation))
         elif class_name == "ContributionPlanBundle":
             list_cpbd = list(ContributionPlanBundleDetails.objects.filter(
