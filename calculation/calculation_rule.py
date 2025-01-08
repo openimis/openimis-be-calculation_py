@@ -30,7 +30,7 @@ class ContributionValuationRule(AbsStrategy):
     def active_for_object(cls, instance, context, type='account_receivable', sub_type='contribution'):
         return (
             instance.__class__.__name__ == "ContractContributionPlanDetails"
-            and  context in ["value", "members", "validity"]
+            and context in ["value", "members", "validity"]
         ) and cls.check_calculation(instance)
 
     @classmethod
@@ -47,8 +47,8 @@ class ContributionValuationRule(AbsStrategy):
         elif class_name == "ContributionPlan":
             match = UUID(str(cls.uuid)) == UUID(str(instance.calculation))
         elif class_name == "ContributionPlanBundle":
-            list_cpbd = list(ContributionPlanBundleDetails.objects.filter(
-                contribution_plan_bundle=instance
+            list_cpbd = list(instance.contributionplanbundledetails_set.filter(
+                is_deleted=False
             ))
             for cpbd in list_cpbd:
                 if match is False:
