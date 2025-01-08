@@ -101,12 +101,11 @@ class ContributionValuationRule(AbsStrategy):
                         return False
                     value = float(income) * (rate / 100)
                     return value
-                elif context == 'members':
-                    if instance.insuree.family:
-                        return list(instance.insuree.family.members.filter(validity_to__isnull=True))
-                    else:
-                        return [instance.insuree]
-
+            elif context == 'members':
+                if instance.contract_details.insuree.family:
+                    return list(instance.contract_details.insuree.family.members.filter(validity_to__isnull=True))
+                else:
+                    return [instance.contract_details.insuree]
             elif context == 'validity':
                 validity_from = kwargs.get('validity_from', None)
                 validity_to = kwargs.get('validity_to', None)
@@ -117,8 +116,6 @@ class ContributionValuationRule(AbsStrategy):
                     contract = instance.contract_details.contract
                 if instance.__class__.__name__ == "ContractDetails":
                     contract = instance.contract
-
-                
                 if contract:
                     validity_from = validity_from or contract.date_valid_from
                     validity_to = validity_to or contract.date_valid_to
