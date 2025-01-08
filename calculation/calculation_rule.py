@@ -10,6 +10,7 @@ from django.contrib.contenttypes.models import ContentType
 from policyholder.models import PolicyHolderInsuree
 from uuid import UUID
 
+
 class ContributionValuationRule(AbsStrategy):
     version = 1
     uuid = "0e1b6dd4-04a0-4ee6-ac47-2a99cfa5e9a8"
@@ -43,7 +44,7 @@ class ContributionValuationRule(AbsStrategy):
         ]
         if class_name == "ABCMeta":
             match = UUID(str(cls.uuid)) == UUID(str(instance.uuid))
-        if class_name == "ContributionPlan":
+        elif class_name == "ContributionPlan":
             match = UUID(str(cls.uuid)) == UUID(str(instance.calculation))
         elif class_name == "ContributionPlanBundle":
             list_cpbd = list(ContributionPlanBundleDetails.objects.filter(
