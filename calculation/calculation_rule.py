@@ -102,8 +102,15 @@ class ContributionValuationRule(AbsStrategy):
                     value = float(income) * (rate / 100)
                     return value
             elif context == 'members':
-                if instance.contract_details.insuree.family:
-                    return list(instance.contract_details.insuree.family.members.filter(validity_to__isnull=True))
+                cp_params, cd_params = instance.contribution_plan.json_ext, instance.contract_details.json_ext
+                if (
+                        instance.contract_details.insuree.family
+                        and 'includeFamily' in cp_params
+                        and cp_params['includeFamily']
+                ):
+                    return list(instance.contract_details.insuree.family.members.filter(
+                        validity_to__isnull=True
+                    ))
                 else:
                     return [instance.contract_details.insuree]
             elif context == 'validity':
