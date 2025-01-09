@@ -104,9 +104,9 @@ class ContributionValuationRule(AbsStrategy):
             elif context == 'members':
                 cp_params, cd_params = instance.contribution_plan.json_ext, instance.contract_details.json_ext
                 if (
-                        instance.contract_details.insuree.family
-                        and 'includeFamily' in cp_params
-                        and cp_params['includeFamily']
+                    instance.contract_details.insuree.family
+                    and 'includeFamily' in cp_params
+                    and cp_params['includeFamily']
                 ):
                     return list(instance.contract_details.insuree.family.members.filter(
                         validity_to__isnull=True
