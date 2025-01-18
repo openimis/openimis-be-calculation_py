@@ -15,6 +15,9 @@ from insuree.test_helpers import create_test_insuree
 from policy.test_helpers import create_test_policy
 from contribution.models import Premium, PayTypeChoices
 from calculation.calculation_rule import ContributionValuationRule
+from product.test_helpers import create_test_product
+from contribution_plan.tests.helpers import create_test_contribution_plan, \
+    create_test_contribution_plan_bundle, create_test_contribution_plan_bundle_details
 from location.test_helpers import create_test_location, create_test_health_facility, create_test_village
 from payer.models import Payer
 from product.models import Product
@@ -47,7 +50,19 @@ class CalcualtionGQLTestCase(openIMISGraphQLTestCase):
         super().setUpClass()
         cls.admin_user = create_test_interactive_user(username="testLocationAdmin")
         cls.admin_token = get_token(cls.admin_user, DummyContext(user=cls.admin_user))
+        # create contribution plans etc
+        cls.product = create_test_product("PlanCode", custom_props={"lump_sum": 200})
 
+        cls.contribution_plan_bundle = create_test_contribution_plan_bundle()
+        cls.contribution_plan = create_test_contribution_plan(
+            product=cls.product,
+            calculation=ContributionValuationRule.uuid,
+            custom_props={"json_ext": {"calculation_rule": {"rate": 10}}}
+        )
+        cls.contribution_plan_bundle_details = create_test_contribution_plan_bundle_details(
+            contribution_plan=cls.contribution_plan,
+            contribution_plan_bundle=cls.contribution_plan_bundle
+        )
     def test_by_class_name(self):
       
         response = self.query(
@@ -182,3 +197,18 @@ class CalcualtionGQLTestCase(openIMISGraphQLTestCase):
         self.assertResponseNoErrors(response)
 
         # Add some more asserts if you like
+        
+    def test_params(self):        
+        response = self.query(f"""
+            {{
+            calculationParams(className: "PolicyHolderInsuree", instanceClassName: "ContributionPlanBundle", instanceId: "{self.contribution_plan_bundle.id}")
+                {{
+                    calculationParams{{type, name, label{{en, fr}}, rights{{read, write, update, replace}}, optionSet{{value, label{{en, fr}}}}, relevance, required, condition, defaultValue}}
+                }}
+            }}
+        """,
+            headers={"HTTP_AUTHORIZATION": f"Bearer {self.admin_token}"},
+        )
+        content = json.loads(response.content)
+        # This validates the status code and if you get errors
+        self.assertResponseNoErrors(response)

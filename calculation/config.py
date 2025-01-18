@@ -71,10 +71,10 @@ CLASS_RULE_PARAM_VALIDATION = [
                     "fr": "Salaire"
                 },
                 "rights": {
-                    "read": ["152101","154101"],
-                    "write": "152102",
-                    "update": "152103",
-                    "replace": "152103",
+                    "read": ["152101","154201"],
+                    "write": ["152102","154202"],
+                    "update": ["152103","154203"],
+                    "replace": ["152103","154203"],
                 },
                 "relevance": "True",
                 "condition": "INPUT>100",
@@ -93,10 +93,10 @@ CLASS_RULE_PARAM_VALIDATION = [
                     "fr": "Salaire"
                 },
                 "rights": {
-                    "read": ["152101","154101"],
-                    "write": "150202",
-                    "update": "150203",
-                    "replace": "150206",
+                    "read": ["150201","154101"],
+                    "write": ["150202","154102"],
+                    "update": ["150203","154103"],
+                    "replace": ["150203","154103"],
                 },
                 "relevance": "True",
                 "condition": "INPUT>100",

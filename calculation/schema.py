@@ -27,11 +27,31 @@ class LabelParamGQLType(graphene.ObjectType):
 
 
 class RightParamGQLType(graphene.ObjectType):
-    read = graphene.String()
-    write = graphene.String()
-    update = graphene.String()
-    replace = graphene.String()
+    read = graphene.List(graphene.String)
+    write = graphene.List(graphene.String)
+    update = graphene.List(graphene.String)
+    replace = graphene.List(graphene.String)
 
+    def resolve_read(parent, info):
+        return ensure_list(getattr(parent,"read",''))
+
+    def resolve_write(parent, info):
+        return ensure_list(getattr(parent,"write",''))
+
+    def resolve_update(parent, info):
+        return ensure_list(getattr(parent,"update",''))
+
+    def resolve_replace(parent, info):
+        return ensure_list(getattr(parent,"replace",''))
+
+
+# Utility function to ensure the value is always a list
+def ensure_list(value):
+    if isinstance(value, list):
+        return value
+    elif isinstance(value, str):
+        return [value]
+    return []
 
 class OptionParamGQLType(graphene.ObjectType):
     value = graphene.String()
