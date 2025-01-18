@@ -71,7 +71,7 @@ CLASS_RULE_PARAM_VALIDATION = [
                     "fr": "Salaire"
                 },
                 "rights": {
-                    "read": "152101",
+                    "read": ["152101","154101"],
                     "write": "152102",
                     "update": "152103",
                     "replace": "152103",
@@ -93,7 +93,7 @@ CLASS_RULE_PARAM_VALIDATION = [
                     "fr": "Salaire"
                 },
                 "rights": {
-                    "read": "150201",
+                    "read": ["152101","154101"],
                     "write": "150202",
                     "update": "150203",
                     "replace": "150206",
