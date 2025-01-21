@@ -104,8 +104,9 @@ class ContributionValuationRule(AbsStrategy):
                 cp_params, cd_params = instance.contribution_plan.json_ext, instance.contract_details.json_ext
                 if (
                     instance.contract_details.insuree.family
-                    and 'includeFamily' in cp_params
-                    and cp_params['includeFamily']
+                    and 'calculation_rule' in cp_params
+                    and 'includeFamily' in cp_params['calculation_rule']
+                    and cp_params['calculation_rule']['includeFamily']
                 ):
                     return list(instance.contract_details.insuree.family.members.filter(
                         validity_to__isnull=True
