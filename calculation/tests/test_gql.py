@@ -3,7 +3,7 @@ import json
 from dataclasses import dataclass
 
 from core.models import User, filter_validity
-from core.models.openimis_graphql_test_case import openIMISGraphQLTestCase
+from core.models.openimis_graphql_test_case import openIMISGraphQLTestCase, BaseTestContext
 from core.test_helpers import create_test_interactive_user
 from django.conf import settings
 from graphene_django.utils.testing import GraphQLTestCase
@@ -26,10 +26,6 @@ import datetime
 # from openIMIS import schema
 
 
-@dataclass
-class DummyContext:
-    """ Just because we need a context to generate. """
-    user: User
 
 
 class CalcualtionGQLTestCase(openIMISGraphQLTestCase):
@@ -49,7 +45,7 @@ class CalcualtionGQLTestCase(openIMISGraphQLTestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.admin_user = create_test_interactive_user(username="testLocationAdmin")
-        cls.admin_token = get_token(cls.admin_user, DummyContext(user=cls.admin_user))
+        cls.admin_token = BaseTestContext(user=cls.admin_user).get_jwt()
         # create contribution plans etc
         cls.product = create_test_product("PlanCode", custom_props={"lump_sum": 200})
 
