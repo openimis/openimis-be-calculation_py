@@ -1,6 +1,5 @@
 from django.core.exceptions import PermissionDenied
 from .apps import CALCULATION_RULES
-from .calculation_rule import ContributionValuationRule
 from uuid import UUID
 
 def get_rule_name(class_name):
