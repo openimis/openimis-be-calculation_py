@@ -4,6 +4,7 @@ from .services import get_rule_name, get_parameters, get_linked_class
 from django.contrib.contenttypes.models import ContentType
 from uuid import UUID
 
+
 class CalculationRulesGQLType(graphene.ObjectType):
     calculation_class_name = graphene.String()
     status = graphene.String()
@@ -33,16 +34,16 @@ class RightParamGQLType(graphene.ObjectType):
     replace = graphene.List(graphene.String)
 
     def resolve_read(parent, info):
-        return ensure_list(getattr(parent,"read",''))
+        return ensure_list(getattr(parent, "read", ''))
 
     def resolve_write(parent, info):
-        return ensure_list(getattr(parent,"write",''))
+        return ensure_list(getattr(parent, "write", ''))
 
     def resolve_update(parent, info):
-        return ensure_list(getattr(parent,"update",''))
+        return ensure_list(getattr(parent, "update", ''))
 
     def resolve_replace(parent, info):
-        return ensure_list(getattr(parent,"replace",''))
+        return ensure_list(getattr(parent, "replace", ''))
 
 
 # Utility function to ensure the value is always a list
@@ -52,6 +53,7 @@ def ensure_list(value):
     elif isinstance(value, str):
         return [value]
     return []
+
 
 class OptionParamGQLType(graphene.ObjectType):
     value = graphene.String()
@@ -105,7 +107,7 @@ class Query(graphene.ObjectType):
 
     def resolve_calculation_rules_by_class_name(parent, info, **kwargs):
         if not info.context.user.has_perms(CalculationConfig.gql_query_calculation_rule_perms):
-           raise PermissionError("Unauthorized")
+            raise PermissionError("Unauthorized")
 
         class_name = kwargs.get("class_name", None)
         list_cr = []
@@ -145,11 +147,11 @@ class Query(graphene.ObjectType):
             for cr in CALCULATION_RULES:
                 if (
                     (
-                        calculation and 
-                        UUID(cr.uuid) == UUID(str(calculation)) and 
+                        calculation and
+                        UUID(cr.uuid) == UUID(str(calculation)) and
                         (calcrule_type == cr.type or calcrule_type is None)
                     ) or (
-                        not calculation  and calcrule_type == cr.type
+                        not calculation and calcrule_type == cr.type
                     )
                 ):
                     list_cr = _append_to_calcrule_list(list_cr, cr)
@@ -162,7 +164,7 @@ class Query(graphene.ObjectType):
 
     def resolve_calculation_params(parent, info, **kwargs):
         if not info.context.user.has_perms(CalculationConfig.gql_query_calculation_rule_perms):
-           raise PermissionError("Unauthorized")
+            raise PermissionError("Unauthorized")
 
         # get the obligatory params from query
         class_name = kwargs.get("class_name", None)
@@ -202,7 +204,7 @@ class Query(graphene.ObjectType):
                     update=param['rights']['update'] if 'update' in param['rights'] else None,
                     replace=param['rights']['replace'] if 'replace' in param['rights'] else None,
                 )
-                #FIXME, either rely on locals (BEST case) or manage it generically
+                # FIXME, either rely on locals (BEST case) or manage it generically
                 label = LabelParamGQLType(
                     en=param['label']['en'] if 'en' in param['label'] else None,
                     fr=param['label']['fr'] if 'fr' in param['label'] else None,
@@ -220,7 +222,7 @@ class Query(graphene.ObjectType):
                     relevance = param["relevance"] if param["relevance"] else None
                 else:
                     relevance = None
- 
+
                 list_params.append(
                     CalculationParamsGQLType(
                         type=param['type'],
@@ -237,7 +239,7 @@ class Query(graphene.ObjectType):
 
     def resolve_linked_class(parent, info, **kwargs):
         if not info.context.user.has_perms(CalculationConfig.gql_query_calculation_rule_perms):
-           raise PermissionError("Unauthorized")
+            raise PermissionError("Unauthorized")
         result_linked_class = []
         # get the params from query
         class_name_list = kwargs.get("class_name_list", None)

@@ -23,7 +23,7 @@ def read_all_calculation_rules(module_name, rule_list):
         if issubclass(cls, AbsStrategy) and cls.__module__.startswith(calc_root):
             rule_list.append(cls)
             cls.ready()
-            
+
 class CalculationConfig(AppConfig):
     name = MODULE_NAME
 
@@ -39,4 +39,4 @@ class CalculationConfig(AppConfig):
         from core.models import ModuleConfiguration
         cfg = ModuleConfiguration.get_or_default(MODULE_NAME, DEFAULT_CFG)
         self.__load_config(cfg)
-        read_all_calculation_rules(MODULE_NAME, CALCULATION_RULES )
+        read_all_calculation_rules(MODULE_NAME, CALCULATION_RULES)
