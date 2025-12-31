@@ -1,6 +1,6 @@
-from django.core.exceptions import PermissionDenied
 from .apps import CALCULATION_RULES
 from uuid import UUID
+
 
 def get_rule_name(class_name):
     list_rule_name = []
@@ -20,7 +20,7 @@ def get_rule_details(class_name):
                 dict_rule_details[class_name] = result_signal['parameters']
             else:
                 to_update = [
-                    p for p in result_signal['parameters'] 
+                    p for p in result_signal['parameters']
                     if all([p['name'] != sp['name'] for sp in dict_rule_details[class_name]])
                 ]
                 dict_rule_details[class_name] += to_update
@@ -31,6 +31,7 @@ def get_calculation_object(uuid):
     for calculation_rule in CALCULATION_RULES:
         if UUID(str(calculation_rule.uuid)) == UUID(str(uuid)):
             return calculation_rule
+
 
 def run_calculation_rules(instance, context, user, **kwargs):
     for calculation_rule in CALCULATION_RULES:
@@ -63,7 +64,7 @@ def get_parameters(class_name, instance):
 def get_linked_class(class_name_list=None):
     return_list_class = set()
     for calculation_rule in CALCULATION_RULES:
-        if class_name_list == None:
+        if class_name_list is None:
             result_signal = calculation_rule.get_linked_class(sender="None", class_name=None)
             if result_signal:
                 return_list_class = return_list_class.union(set(result_signal))
