@@ -16,7 +16,7 @@ class CalculationRulesGQLType(graphene.ObjectType):
     from_to = graphene.JSONString()
     type = graphene.String()
     sub_type = graphene.String()
-    supports_advanced_criteria = graphene.Boolean()
+    supports_advanced_criteria = graphene.Boolean(required=True)
 
 
 class CalculationRulesListGQLType(graphene.ObjectType):
