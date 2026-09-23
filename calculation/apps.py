@@ -8,15 +8,14 @@ from core.rights_declaration import RightsDeclaration
 MODULE_NAME = "calculation"
 
 
-# Droits, par entite puis par action. Une seule entite, `calculationRule` : la regle de
-# calcul, que les autres modules interrogent pour valoriser une cotisation, une prestation
-# ou une commission.
+# Rights, by entity then by action. A single entity, `calculationRule`: the calculation
+# rule the other modules query to value a contribution, a benefit or a commission.
 #
-# `update` (153003) est une declaration dormante : le module n'expose aucune mutation
-# (`schema.py` n'a pas de classe `Mutation`), l'identifiant est donc declare et lu nulle
-# part. Conserve plutot que supprime - il est au catalogue (`permissions_map.json`), des
-# roles peuvent deja le porter, et c'est l'identifiant qui devra etre applique le jour ou
-# la mutation existera.
+# `update` (153003) is a dormant declaration: the module exposes no mutation
+# (`schema.py` has no `Mutation` class), so the identifier is declared and read nowhere.
+# Kept rather than removed - it is in the catalogue (`permissions_map.json`), roles may
+# already carry it, and it is the identifier that will have to be enforced the day the
+# mutation exists.
 DJANGO_PERMS = {
     "calculationRule": {
         "query": ("calculation.view_calculationrule", 153001),
@@ -37,11 +36,11 @@ configured_perms = RIGHTS.configured
 require = RIGHTS.require
 
 
-# Pas de `get_rights` sur un modele : `calculation/models.py` est vide. Une regle de
-# calcul est une classe de strategie (`AbsStrategy`) decouverte a l'import, pas une ligne
-# en base - il n'y a donc aucun modele a qui confier l'acces, et aucun `scope_parent` a
-# declarer. Le point d'acces a la valeur configuree est `configured_perms`, ci-dessus.
-# Le nom django reste purement declaratif, comme pour `workflow`.
+# No `get_rights` on a model: `calculation/models.py` is empty. A calculation rule is a
+# strategy class (`AbsStrategy`) discovered at import time, not a row in the database -
+# so there is no model to entrust the access to, and no `scope_parent` to declare. The
+# access point to the configured value is `configured_perms`, above. The django name
+# stays purely declarative, as for `workflow`.
 
 
 DEFAULT_CFG = {

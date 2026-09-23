@@ -1,8 +1,8 @@
-"""Les droits de `calculation` sont declares une seule fois, et leurs entiers sont figes.
+"""`calculation`'s rights are declared once, and their integers are pinned.
 
-Un identifiant est ce que portent les roles (`RoleRight.right_id`) : le changer retire
-l'acces a tous les roles qui le detiennent. Ce test l'epingle, pour qu'un changement
-soit une decision visible en revue et non un effet de bord.
+An identifier is what the roles carry (`RoleRight.right_id`): changing it withdraws
+access from every role that holds it. This test pins it down, so that a change is a
+decision visible in review and not a side effect.
 """
 
 import json
@@ -12,7 +12,7 @@ from django.test import TestCase
 
 from calculation.apps import DJANGO_PERMS, RIGHTS, CalculationConfig, _PERM_CFG
 
-# entier attendu par cle de config, tel que deploye
+# expected integer per config key, as deployed
 EXPECTED = {
     "gql_query_calculation_rule_perms": ["153001"],
     "gql_mutation_update_calculation_rule_perms": ["153003"],
@@ -50,7 +50,7 @@ class CalculationPermissionDeclarationsTestCase(TestCase):
         self.assertEqual(set(_PERM_CFG), set(EXPECTED))
 
     def test_no_right_list_is_empty(self):
-        # `has_perms([])` renvoie True : une liste vide accorde a tout le monde.
+        # `has_perms([])` returns True: an empty list grants to everybody.
         for key in _PERM_CFG:
             with self.subTest(key=key):
                 self.assertTrue(getattr(CalculationConfig, key))
@@ -80,7 +80,7 @@ class CalculationPermissionDeclarationsTestCase(TestCase):
                     self.assertIn(right_id, by_id)
 
     def test_the_dormant_key_is_still_dormant(self):
-        """Si quelqu'un branche 153003, ce test le lui rappelle pour qu'il le documente."""
+        """If someone wires 153003 up, this test reminds them to document it."""
         self.assertEqual(
             DORMANT_KEYS, {"gql_mutation_update_calculation_rule_perms"}
         )
