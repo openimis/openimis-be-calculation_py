@@ -3,13 +3,48 @@ import inspect
 
 from django.apps import AppConfig
 from core.abs_calculation_rule import AbsStrategy
+from core.rights_declaration import RightsDeclaration
 
 MODULE_NAME = "calculation"
 
 
+# Droits, par entite puis par action. Une seule entite, `calculationRule` : la regle de
+# calcul, que les autres modules interrogent pour valoriser une cotisation, une prestation
+# ou une commission.
+#
+# `update` (153003) est une declaration dormante : le module n'expose aucune mutation
+# (`schema.py` n'a pas de classe `Mutation`), l'identifiant est donc declare et lu nulle
+# part. Conserve plutot que supprime - il est au catalogue (`permissions_map.json`), des
+# roles peuvent deja le porter, et c'est l'identifiant qui devra etre applique le jour ou
+# la mutation existera.
+DJANGO_PERMS = {
+    "calculationRule": {
+        "query": ("calculation.view_calculationrule", 153001),
+        "update": ("calculation.change_calculationrule", 153003),
+    },
+}
+
+_PERM_CFG = {
+    "gql_query_calculation_rule_perms": ("calculationRule", "query"),
+    "gql_mutation_update_calculation_rule_perms": ("calculationRule", "update"),
+}
+
+RIGHTS = RightsDeclaration(MODULE_NAME, DJANGO_PERMS, _PERM_CFG)
+
+perms = RIGHTS.perms
+django_perms = RIGHTS.django_perm_names
+configured_perms = RIGHTS.configured
+require = RIGHTS.require
+
+
+# Pas de `get_rights` sur un modele : `calculation/models.py` est vide. Une regle de
+# calcul est une classe de strategie (`AbsStrategy`) decouverte a l'import, pas une ligne
+# en base - il n'y a donc aucun modele a qui confier l'acces, et aucun `scope_parent` a
+# declarer. Le point d'acces a la valeur configuree est `configured_perms`, ci-dessus.
+# Le nom django reste purement declaratif, comme pour `workflow`.
+
+
 DEFAULT_CFG = {
-    "gql_query_calculation_rule_perms": ["153001"],
-    "gql_mutation_update_calculation_rule_perms": ["153003"],
 }
 
 
@@ -27,8 +62,11 @@ def read_all_calculation_rules(module_name, rule_list):
 class CalculationConfig(AppConfig):
     name = MODULE_NAME
 
-    gql_query_calculation_rule_perms = []
-    gql_mutation_update_calculation_rule_perms = []
+    # Droits: constantes, plus surchargeables. Ils ne passent plus par le
+    # DEFAULT_CFG ni par ready(): `ModuleConfiguration.get_or_default` ignore
+    # desormais toute cle `_perms` stockee en base.
+    gql_query_calculation_rule_perms = RIGHTS.perms("calculationRule", "query")
+    gql_mutation_update_calculation_rule_perms = RIGHTS.perms("calculationRule", "update")
 
     def __load_config(self, cfg):
         for field in cfg:
