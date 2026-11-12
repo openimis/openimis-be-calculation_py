@@ -2,7 +2,59 @@ import graphene
 from .apps import CALCULATION_RULES, CalculationConfig
 from .services import get_rule_name, get_parameters, get_linked_class
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.utils.translation import gettext as _
+from core.gql_errors import BAD_REQUEST, NOT_FOUND, CodedGraphQLError
+from core.models import target_queryset
 from uuid import UUID
+
+
+class UnsupportedCalculationInstance(CodedGraphQLError):
+    """The instance class is not one a calculation rule links to ``class_name``."""
+
+    error_code = BAD_REQUEST
+
+
+class CalculationInstanceNotFound(CodedGraphQLError):
+    """No such instance among the rows the user may see."""
+
+    error_code = NOT_FOUND
+
+
+def _supported_instance_classes(class_name):
+    """Lower-cased model names a calculation rule may read parameters from.
+
+    The rules declare them: ``class_name`` must be an impacted class of at least
+    one rule, and the instance class one of the classes the rules link to it
+    (``get_linked_class``, which is also what the frontend asks before calling
+    ``calculationParams``). Nothing else is ever loaded.
+    """
+    if not class_name or not get_rule_name(class_name=class_name):
+        return set()
+    return {name.lower() for name in get_linked_class([class_name])}
+
+
+def _load_instance(class_name, instance_class_name, instance_id, user):
+    """The instance ``calculationParams`` reads, within the user's row security."""
+    if str(instance_class_name or "").lower() not in _supported_instance_classes(class_name):
+        raise UnsupportedCalculationInstance(
+            _("Calculation parameters are not available for %(class_name)s")
+            % {"class_name": instance_class_name}
+        )
+    instance_type = ContentType.objects.filter(model__iexact=instance_class_name).first()
+    instance_class = instance_type.model_class() if instance_type else None
+    instance = None
+    if instance_class is not None:
+        try:
+            instance = target_queryset(instance_class, user).filter(id=instance_id).first()
+        except (ValueError, TypeError, DjangoValidationError):
+            instance = None
+    if instance is None:
+        raise CalculationInstanceNotFound(
+            _("%(class_name)s %(instance_id)s not found")
+            % {"class_name": instance_class_name, "instance_id": instance_id}
+        )
+    return instance
 
 
 class CalculationRulesGQLType(graphene.ObjectType):
@@ -180,10 +232,7 @@ class Query(graphene.ObjectType):
                 if UUID(calculation_rule.uuid) == UUID(instance_id):
                     instance = calculation_rule
         else:
-            # get the instance class name to get instance object by uuid
-            instance_type = ContentType.objects.get(model__iexact=f'{instance_class_name}')
-            instance_class = instance_type.model_class()
-            instance = instance_class.objects.get(id=instance_id)
+            instance = _load_instance(class_name, instance_class_name, instance_id, info.context.user)
 
         list_params = []
         if class_name and instance:
