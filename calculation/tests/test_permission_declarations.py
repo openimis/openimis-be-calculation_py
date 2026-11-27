@@ -5,10 +5,9 @@ access from every role that holds it. This test pins it down, so that a change i
 decision visible in review and not a side effect.
 """
 
-import json
-from pathlib import Path
-
 from django.test import TestCase
+
+from core.utils import build_permissions_map
 
 from calculation.apps import DJANGO_PERMS, RIGHTS, CalculationConfig, _PERM_CFG
 
@@ -20,15 +19,6 @@ EXPECTED = {
 
 # Declare, lu nulle part : le module n'expose aucune mutation.
 DORMANT_KEYS = {"gql_mutation_update_calculation_rule_perms"}
-
-
-def _permissions_map():
-    here = Path(__file__).resolve()
-    for parent in here.parents:
-        candidate = parent / "backend" / "openIMIS" / "permissions_map.json"
-        if candidate.exists():
-            return json.loads(candidate.read_text(encoding="utf-8"))
-    return None
 
 
 class CalculationPermissionDeclarationsTestCase(TestCase):
@@ -70,9 +60,7 @@ class CalculationPermissionDeclarationsTestCase(TestCase):
         )
 
     def test_the_ids_are_in_the_permissions_map(self):
-        catalogue = _permissions_map()
-        if catalogue is None:
-            self.skipTest("permissions_map.json introuvable depuis ce chemin")
+        catalogue = build_permissions_map()
         by_id = {str(v) for v in catalogue.values()}
         for key, ids in EXPECTED.items():
             with self.subTest(key=key):
